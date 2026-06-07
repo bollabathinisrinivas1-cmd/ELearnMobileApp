@@ -88,7 +88,7 @@ public class LoginViewModel extends ViewModel {
                 JSONObject response = ApiClient.post("/auth/token", body);
 
                 // Extract tokens from response
-                String accessToken = response.getString("accessToken");
+                String accessToken = response.getString("token");
                 String refreshToken = response.getString("refreshToken");
 
                 // Decode JWT to extract user claims
