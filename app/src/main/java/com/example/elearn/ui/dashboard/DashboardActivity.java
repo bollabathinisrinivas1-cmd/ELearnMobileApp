@@ -13,7 +13,11 @@ import com.example.elearn.R;
 import com.example.elearn.adapters.DashboardCardAdapter;
 import com.example.elearn.auth.AuthService;
 import com.example.elearn.databinding.ActivityDashboardBinding;
+import com.example.elearn.ui.categories.CategoriesActivity;
+import com.example.elearn.ui.courses.CoursesActivity;
+import com.example.elearn.ui.enrollments.EnrollmentsActivity;
 import com.example.elearn.ui.login.LoginActivity;
+import com.example.elearn.ui.users.UsersActivity;
 
 /**
  * Dashboard screen activity. Displays role-based summary cards and statistics.
@@ -114,7 +118,28 @@ public class DashboardActivity extends AppCompatActivity {
         viewModel.getCards().observe(this, cards -> {
             if (cards != null) {
                 DashboardCardAdapter adapter = new DashboardCardAdapter(cards, card -> {
-                    // Card click handling - can be extended for navigation
+                    // Card click handling: navigate based on route
+                    String route = card.getRoute();
+                    if (route == null) return;
+
+                    Intent intent = null;
+                    switch (route) {
+                        case "courses":
+                            intent = new Intent(DashboardActivity.this, CoursesActivity.class);
+                            break;
+                        case "categories":
+                            intent = new Intent(DashboardActivity.this, CategoriesActivity.class);
+                            break;
+                        case "enrollments":
+                            intent = new Intent(DashboardActivity.this, EnrollmentsActivity.class);
+                            break;
+                        case "users":
+                            intent = new Intent(DashboardActivity.this, UsersActivity.class);
+                            break;
+                    }
+                    if (intent != null) {
+                        startActivity(intent);
+                    }
                 });
                 binding.dashboardRecyclerView.setAdapter(adapter);
                 binding.dashboardRecyclerView.setVisibility(View.VISIBLE);
@@ -125,6 +150,17 @@ public class DashboardActivity extends AppCompatActivity {
         viewModel.getPieChartData().observe(this, pieChartData -> {
             if (pieChartData != null) {
                 binding.pieChartContainer.setVisibility(View.VISIBLE);
+
+                // Create and add PieChartView with data
+                PieChartView pieChartView = new PieChartView(this);
+                float paidPercent = pieChartData.getPaidPercent();
+                float freePercent = 100f - paidPercent;
+                pieChartView.setData(paidPercent, freePercent);
+
+                binding.pieChartContainer.addView(pieChartView,
+                        new android.widget.FrameLayout.LayoutParams(
+                                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
             }
         });
 

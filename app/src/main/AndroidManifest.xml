@@ -45,6 +45,32 @@
             android:label="Dashboard"
             android:theme="@style/Theme.ELearn.NoActionBar">
         </activity>
+        <activity
+            android:name=".ui.login.ForgotPasswordActivity"
+            android:exported="false"
+            android:label="Forgot Password"
+            android:theme="@style/Theme.ELearn.NoActionBar">
+        </activity>
+        <activity
+            android:name=".ui.courses.CoursesActivity"
+            android:exported="false"
+            android:label="Courses">
+        </activity>
+        <activity
+            android:name=".ui.categories.CategoriesActivity"
+            android:exported="false"
+            android:label="Categories">
+        </activity>
+        <activity
+            android:name=".ui.enrollments.EnrollmentsActivity"
+            android:exported="false"
+            android:label="My Enrollments">
+        </activity>
+        <activity
+            android:name=".ui.users.UsersActivity"
+            android:exported="false"
+            android:label="Users">
+        </activity>
     </application>
 
 </manifest>
