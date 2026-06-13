@@ -5,6 +5,6 @@
     android:insetRight="18dp"
     android:insetBottom="18dp">
     <bitmap
-        android:src="@drawable/education"
+        android:src="@drawable/elearn_splash"
         android:gravity="fill" />
 </inset>

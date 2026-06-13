@@ -17,9 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -92,40 +90,50 @@ public class DashboardViewModel extends ViewModel {
                     JSONArray usersArray = ApiClient.getArray("/users", token);
                     int studentCount = 0;
                     int staffCount = 0;
+                    List<String> studentIds = new ArrayList<>();
 
                     for (int i = 0; i < usersArray.length(); i++) {
                         JSONObject user = usersArray.getJSONObject(i);
                         String userRole = user.optString("role", "");
                         if ("Student".equals(userRole)) {
                             studentCount++;
+                            studentIds.add(user.optString("id", ""));
                         } else {
                             staffCount++;
                         }
                     }
 
-                    // Build a map of courseId → isFree from the courses array
-                    Map<String, Boolean> courseIsFreeMap = new HashMap<>();
+                    // Build set of paid course IDs (courses where isFree=false and price>0)
+                    java.util.Set<String> paidCourseIds = new java.util.HashSet<>();
                     for (int i = 0; i < coursesArray.length(); i++) {
                         JSONObject c = coursesArray.getJSONObject(i);
-                        courseIsFreeMap.put(c.optString("id", ""), c.optBoolean("isFree", false));
-                    }
-
-                    // Count enrollments by course type
-                    int paidEnrollments = 0;
-                    int freeEnrollments = 0;
-                    for (int i = 0; i < enrollmentsArray.length(); i++) {
-                        JSONObject e = enrollmentsArray.getJSONObject(i);
-                        String courseId = e.optString("courseId", "");
-                        Boolean isFree = courseIsFreeMap.get(courseId);
-                        if (isFree != null && isFree) {
-                            freeEnrollments++;
-                        } else {
-                            paidEnrollments++;
+                        if (!c.optBoolean("isFree", false) && c.optDouble("price", 0) > 0) {
+                            paidCourseIds.add(c.optString("id", ""));
                         }
                     }
 
-                    int totalEnrollments = paidEnrollments + freeEnrollments;
-                    chartData = new PieChartData(paidEnrollments, freeEnrollments, totalEnrollments);
+                    // For each student, check if they have any paid course enrollment
+                    int paidStudents = 0;
+                    for (String studentId : studentIds) {
+                        try {
+                            JSONArray studentEnrollments = ApiClient.getArray("/enrollments/" + studentId, token);
+                            boolean hasPaid = false;
+                            for (int j = 0; j < studentEnrollments.length(); j++) {
+                                String courseId = studentEnrollments.getJSONObject(j).optString("courseId", "");
+                                if (paidCourseIds.contains(courseId)) {
+                                    hasPaid = true;
+                                    break;
+                                }
+                            }
+                            if (hasPaid) {
+                                paidStudents++;
+                            }
+                        } catch (Exception ignored) {
+                            // Skip students whose enrollments can't be fetched
+                        }
+                    }
+                    int freeStudents = studentCount - paidStudents;
+                    chartData = new PieChartData(paidStudents, freeStudents, studentCount);
 
                     // Build 5 cards for Admin
                     cardList.add(new DashboardCard(
@@ -139,11 +147,11 @@ public class DashboardViewModel extends ViewModel {
                     cardList.add(new DashboardCard(
                             "Students", "Registered students",
                             "people", android.R.color.holo_orange_light,
-                            studentCount, "users"));
+                            studentCount, "users_students"));
                     cardList.add(new DashboardCard(
                             "Teachers & Admin", "Staff members",
                             "admin_panel_settings", android.R.color.holo_red_light,
-                            staffCount, "users"));
+                            staffCount, "users_staff"));
                     cardList.add(new DashboardCard(
                             "My Enrollments", "Enrolled courses",
                             "assignment", android.R.color.holo_purple,
@@ -252,40 +260,50 @@ public class DashboardViewModel extends ViewModel {
                 JSONArray usersArray = ApiClient.getArray("/users", token);
                 int studentCount = 0;
                 int staffCount = 0;
+                List<String> studentIds = new ArrayList<>();
 
                 for (int i = 0; i < usersArray.length(); i++) {
                     JSONObject user = usersArray.getJSONObject(i);
                     String userRole = user.optString("role", "");
                     if ("Student".equals(userRole)) {
                         studentCount++;
+                        studentIds.add(user.optString("id", ""));
                     } else {
                         staffCount++;
                     }
                 }
 
-                // Build a map of courseId → isFree from the courses array
-                Map<String, Boolean> courseIsFreeMap = new HashMap<>();
+                // Build set of paid course IDs (courses where isFree=false and price>0)
+                java.util.Set<String> paidCourseIds = new java.util.HashSet<>();
                 for (int i = 0; i < coursesArray.length(); i++) {
                     JSONObject c = coursesArray.getJSONObject(i);
-                    courseIsFreeMap.put(c.optString("id", ""), c.optBoolean("isFree", false));
-                }
-
-                // Count enrollments by course type
-                int paidEnrollments = 0;
-                int freeEnrollments = 0;
-                for (int i = 0; i < enrollmentsArray.length(); i++) {
-                    JSONObject e = enrollmentsArray.getJSONObject(i);
-                    String courseId = e.optString("courseId", "");
-                    Boolean isFree = courseIsFreeMap.get(courseId);
-                    if (isFree != null && isFree) {
-                        freeEnrollments++;
-                    } else {
-                        paidEnrollments++;
+                    if (!c.optBoolean("isFree", false) && c.optDouble("price", 0) > 0) {
+                        paidCourseIds.add(c.optString("id", ""));
                     }
                 }
 
-                int totalEnrollments = paidEnrollments + freeEnrollments;
-                chartData = new PieChartData(paidEnrollments, freeEnrollments, totalEnrollments);
+                // For each student, check if they have any paid course enrollment
+                int paidStudents = 0;
+                for (String studentId : studentIds) {
+                    try {
+                        JSONArray studentEnrollments = ApiClient.getArray("/enrollments/" + studentId, token);
+                        boolean hasPaid = false;
+                        for (int j = 0; j < studentEnrollments.length(); j++) {
+                            String courseId = studentEnrollments.getJSONObject(j).optString("courseId", "");
+                            if (paidCourseIds.contains(courseId)) {
+                                hasPaid = true;
+                                break;
+                            }
+                        }
+                        if (hasPaid) {
+                            paidStudents++;
+                        }
+                    } catch (Exception ignored) {
+                        // Skip students whose enrollments can't be fetched
+                    }
+                }
+                int freeStudents = studentCount - paidStudents;
+                chartData = new PieChartData(paidStudents, freeStudents, studentCount);
 
                 cardList.add(new DashboardCard(
                         "Total Courses", "Available courses",
@@ -298,11 +316,11 @@ public class DashboardViewModel extends ViewModel {
                 cardList.add(new DashboardCard(
                         "Students", "Registered students",
                         "people", android.R.color.holo_orange_light,
-                        studentCount, "users"));
+                        studentCount, "users_students"));
                 cardList.add(new DashboardCard(
                         "Teachers & Admin", "Staff members",
                         "admin_panel_settings", android.R.color.holo_red_light,
-                        staffCount, "users"));
+                        staffCount, "users_staff"));
                 cardList.add(new DashboardCard(
                         "My Enrollments", "Enrolled courses",
                         "assignment", android.R.color.holo_purple,

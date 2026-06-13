@@ -22,8 +22,8 @@ public class PieChartView extends View {
     private final Paint freePaint;
     private final RectF arcBounds = new RectF();
 
-    private static final int PAID_COLOR = 0xFF1976D2; // Blue
-    private static final int FREE_COLOR = 0xFF9E9E9E; // Grey
+    private static final int PAID_COLOR = 0xFF4CAF50; // Green
+    private static final int FREE_COLOR = 0xFFE91E63; // Pink
 
     public PieChartView(Context context) {
         this(context, null);

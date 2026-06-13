@@ -2,14 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/splash_background">
+    android:background="@android:color/white">
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:layout_margin="32dp"
-        android:src="@drawable/education"
+        android:src="@drawable/elearn_splash"
         android:scaleType="fitCenter"
         android:contentDescription="@string/app_name" />
 

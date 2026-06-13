@@ -187,6 +187,14 @@ public class DashboardActivity extends AppCompatActivity {
                         case "users":
                             intent = new Intent(DashboardActivity.this, UsersActivity.class);
                             break;
+                        case "users_students":
+                            intent = new Intent(DashboardActivity.this, UsersActivity.class);
+                            intent.putExtra("roleFilter", "Student");
+                            break;
+                        case "users_staff":
+                            intent = new Intent(DashboardActivity.this, UsersActivity.class);
+                            intent.putExtra("roleFilter", "Staff");
+                            break;
                     }
                     if (intent != null) {
                         startActivity(intent);
@@ -208,7 +216,9 @@ public class DashboardActivity extends AppCompatActivity {
                 float freePercent = 100f - paidPercent;
                 pieChartView.setData(paidPercent, freePercent);
 
-                binding.pieChartContainer.addView(pieChartView,
+                android.widget.FrameLayout pieChartFrame = binding.getRoot().findViewById(R.id.pieChartFrame);
+                pieChartFrame.removeAllViews();
+                pieChartFrame.addView(pieChartView,
                         new android.widget.FrameLayout.LayoutParams(
                                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT));

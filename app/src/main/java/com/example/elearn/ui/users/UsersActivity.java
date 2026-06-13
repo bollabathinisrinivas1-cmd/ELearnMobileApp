@@ -46,6 +46,9 @@ public class UsersActivity extends AppCompatActivity {
         authService = new AuthService(this);
         String token = authService.getAccessToken();
 
+        // Check for role filter intent extra
+        String roleFilter = getIntent().getStringExtra("roleFilter");
+
         // Show progress bar initially
         binding.progressBar.setVisibility(View.VISIBLE);
 
@@ -59,7 +62,20 @@ public class UsersActivity extends AppCompatActivity {
                 List<User> users = new ArrayList<>();
                 for (int i = 0; i < response.length(); i++) {
                     JSONObject obj = response.getJSONObject(i);
-                    users.add(User.fromJson(obj));
+                    User user = User.fromJson(obj);
+
+                    // Apply role filter if specified
+                    if (roleFilter == null) {
+                        users.add(user);
+                    } else if ("Student".equals(roleFilter)) {
+                        if ("Student".equals(user.getRole())) {
+                            users.add(user);
+                        }
+                    } else if ("Staff".equals(roleFilter)) {
+                        if ("Admin".equals(user.getRole()) || "Teacher".equals(user.getRole())) {
+                            users.add(user);
+                        }
+                    }
                 }
 
                 mainHandler.post(() -> {
