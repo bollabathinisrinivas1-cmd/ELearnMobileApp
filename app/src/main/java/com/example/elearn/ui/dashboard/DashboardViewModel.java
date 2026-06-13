@@ -104,10 +104,10 @@ public class DashboardViewModel extends ViewModel {
                     }
 
                     // Build a map of courseId → isFree from the courses array
-                    Map<Integer, Boolean> courseIsFreeMap = new HashMap<>();
+                    Map<String, Boolean> courseIsFreeMap = new HashMap<>();
                     for (int i = 0; i < coursesArray.length(); i++) {
                         JSONObject c = coursesArray.getJSONObject(i);
-                        courseIsFreeMap.put(c.getInt("id"), c.optBoolean("isFree", false));
+                        courseIsFreeMap.put(c.optString("id", ""), c.optBoolean("isFree", false));
                     }
 
                     // Count enrollments by course type
@@ -115,7 +115,7 @@ public class DashboardViewModel extends ViewModel {
                     int freeEnrollments = 0;
                     for (int i = 0; i < enrollmentsArray.length(); i++) {
                         JSONObject e = enrollmentsArray.getJSONObject(i);
-                        int courseId = e.getInt("courseId");
+                        String courseId = e.optString("courseId", "");
                         Boolean isFree = courseIsFreeMap.get(courseId);
                         if (isFree != null && isFree) {
                             freeEnrollments++;
@@ -264,10 +264,10 @@ public class DashboardViewModel extends ViewModel {
                 }
 
                 // Build a map of courseId → isFree from the courses array
-                Map<Integer, Boolean> courseIsFreeMap = new HashMap<>();
+                Map<String, Boolean> courseIsFreeMap = new HashMap<>();
                 for (int i = 0; i < coursesArray.length(); i++) {
                     JSONObject c = coursesArray.getJSONObject(i);
-                    courseIsFreeMap.put(c.getInt("id"), c.optBoolean("isFree", false));
+                    courseIsFreeMap.put(c.optString("id", ""), c.optBoolean("isFree", false));
                 }
 
                 // Count enrollments by course type
@@ -275,7 +275,7 @@ public class DashboardViewModel extends ViewModel {
                 int freeEnrollments = 0;
                 for (int i = 0; i < enrollmentsArray.length(); i++) {
                     JSONObject e = enrollmentsArray.getJSONObject(i);
-                    int courseId = e.getInt("courseId");
+                    String courseId = e.optString("courseId", "");
                     Boolean isFree = courseIsFreeMap.get(courseId);
                     if (isFree != null && isFree) {
                         freeEnrollments++;
