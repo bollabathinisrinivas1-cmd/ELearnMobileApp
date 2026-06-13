@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
+import com.example.elearn.network.ApiClient;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -105,6 +107,55 @@ public class AuthService {
                 .remove(KEY_USER_ROLE)
                 .remove(KEY_USER_NAME)
                 .apply();
+    }
+
+    /**
+     * Returns the stored refresh token, or null if not present.
+     */
+    public String getRefreshToken() {
+        return prefs.getString(KEY_REFRESH_TOKEN, null);
+    }
+
+    /**
+     * Attempts to refresh the access token using the stored refresh token.
+     * Must be called from a background thread (performs network I/O).
+     *
+     * @return true if refresh succeeded and new tokens were stored, false otherwise
+     */
+    public boolean refreshToken() {
+        try {
+            String refreshToken = getRefreshToken();
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                return false;
+            }
+
+            JSONObject body = new JSONObject();
+            body.put("refreshToken", refreshToken);
+
+            JSONObject response = ApiClient.post("/auth/refresh", body);
+
+            String newAccessToken = response.optString("token", null);
+            String newRefreshToken = response.optString("refreshToken", null);
+
+            if (newAccessToken == null || newAccessToken.isEmpty()) {
+                return false;
+            }
+
+            storeTokens(newAccessToken, newRefreshToken);
+
+            Map<String, String> claims = decodeJwt(newAccessToken);
+            if (claims != null) {
+                storeUserInfo(
+                        claims.get("userId"),
+                        claims.get("role"),
+                        claims.get("name")
+                );
+            }
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

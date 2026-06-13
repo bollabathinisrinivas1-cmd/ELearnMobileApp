@@ -17,7 +17,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,6 +36,8 @@ public class DashboardViewModel extends ViewModel {
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private boolean hasAttemptedRefresh = false;
 
     public LiveData<Boolean> getIsLoading() {
         return isLoading;
@@ -99,13 +103,29 @@ public class DashboardViewModel extends ViewModel {
                         }
                     }
 
-                    // Compute PieChartData
-                    // paidStudents = those with enrollments (simplified: enrollmentCount)
-                    // freeStudents = totalStudents - paidStudents
-                    int totalStudents = studentCount;
-                    int paidStudents = Math.min(enrollmentCount, totalStudents);
-                    int freeStudents = totalStudents - paidStudents;
-                    chartData = new PieChartData(paidStudents, freeStudents, totalStudents);
+                    // Build a map of courseId → isFree from the courses array
+                    Map<Integer, Boolean> courseIsFreeMap = new HashMap<>();
+                    for (int i = 0; i < coursesArray.length(); i++) {
+                        JSONObject c = coursesArray.getJSONObject(i);
+                        courseIsFreeMap.put(c.getInt("id"), c.optBoolean("isFree", false));
+                    }
+
+                    // Count enrollments by course type
+                    int paidEnrollments = 0;
+                    int freeEnrollments = 0;
+                    for (int i = 0; i < enrollmentsArray.length(); i++) {
+                        JSONObject e = enrollmentsArray.getJSONObject(i);
+                        int courseId = e.getInt("courseId");
+                        Boolean isFree = courseIsFreeMap.get(courseId);
+                        if (isFree != null && isFree) {
+                            freeEnrollments++;
+                        } else {
+                            paidEnrollments++;
+                        }
+                    }
+
+                    int totalEnrollments = paidEnrollments + freeEnrollments;
+                    chartData = new PieChartData(paidEnrollments, freeEnrollments, totalEnrollments);
 
                     // Build 5 cards for Admin
                     cardList.add(new DashboardCard(
@@ -156,22 +176,40 @@ public class DashboardViewModel extends ViewModel {
                 });
 
             } catch (ApiException e) {
-                mainHandler.post(() -> {
-                    int statusCode = e.getStatusCode();
-                    if (statusCode == 401) {
-                        errorMessage.setValue("Session expired. Please log in again.");
-                    } else if (statusCode >= 500) {
-                        errorMessage.setValue("Server error. Please try again later.");
+                int statusCode = e.getStatusCode();
+                if (statusCode == 401 && !hasAttemptedRefresh) {
+                    hasAttemptedRefresh = true;
+                    boolean refreshed = authService.refreshToken();
+                    if (refreshed) {
+                        // Retry the data load with new token
+                        loadDashboardDataInternal(authService);
+                        return;
                     } else {
-                        String body = e.getResponseBody();
-                        if (body != null && !body.isEmpty()) {
-                            errorMessage.setValue(body);
-                        } else {
-                            errorMessage.setValue("An unexpected error occurred. Please try again.");
-                        }
+                        mainHandler.post(() -> {
+                            errorMessage.setValue("Session expired. Please log in again.");
+                            isLoading.setValue(false);
+                        });
                     }
-                    isLoading.setValue(false);
-                });
+                } else if (statusCode == 401) {
+                    mainHandler.post(() -> {
+                        errorMessage.setValue("Session expired. Please log in again.");
+                        isLoading.setValue(false);
+                    });
+                } else {
+                    mainHandler.post(() -> {
+                        if (statusCode >= 500) {
+                            errorMessage.setValue("Server error. Please try again later.");
+                        } else {
+                            String body = e.getResponseBody();
+                            if (body != null && !body.isEmpty()) {
+                                errorMessage.setValue(body);
+                            } else {
+                                errorMessage.setValue("An unexpected error occurred. Please try again.");
+                            }
+                        }
+                        isLoading.setValue(false);
+                    });
+                }
             } catch (Exception e) {
                 mainHandler.post(() -> {
                     errorMessage.setValue("Unable to connect to server. Please try again later.");
@@ -185,5 +223,120 @@ public class DashboardViewModel extends ViewModel {
     protected void onCleared() {
         super.onCleared();
         executorService.shutdown();
+    }
+
+    /**
+     * Internal method that performs the actual data loading.
+     * Called directly (not via executor) when retrying after a token refresh,
+     * since we are already on the background thread.
+     */
+    private void loadDashboardDataInternal(AuthService authService) {
+        try {
+            String token = authService.getAccessToken();
+            String userId = authService.getUserId();
+            String role = authService.getUserRole();
+
+            JSONArray coursesArray = ApiClient.getArray("/courses", token);
+            int courseCount = coursesArray.length();
+
+            JSONArray categoriesArray = ApiClient.getArray("/categories", token);
+            int categoryCount = categoriesArray.length();
+
+            JSONArray enrollmentsArray = ApiClient.getArray("/enrollments/" + userId, token);
+            int enrollmentCount = enrollmentsArray.length();
+
+            List<DashboardCard> cardList = new ArrayList<>();
+            PieChartData chartData = null;
+
+            if ("Admin".equals(role)) {
+                JSONArray usersArray = ApiClient.getArray("/users", token);
+                int studentCount = 0;
+                int staffCount = 0;
+
+                for (int i = 0; i < usersArray.length(); i++) {
+                    JSONObject user = usersArray.getJSONObject(i);
+                    String userRole = user.optString("role", "");
+                    if ("Student".equals(userRole)) {
+                        studentCount++;
+                    } else {
+                        staffCount++;
+                    }
+                }
+
+                // Build a map of courseId → isFree from the courses array
+                Map<Integer, Boolean> courseIsFreeMap = new HashMap<>();
+                for (int i = 0; i < coursesArray.length(); i++) {
+                    JSONObject c = coursesArray.getJSONObject(i);
+                    courseIsFreeMap.put(c.getInt("id"), c.optBoolean("isFree", false));
+                }
+
+                // Count enrollments by course type
+                int paidEnrollments = 0;
+                int freeEnrollments = 0;
+                for (int i = 0; i < enrollmentsArray.length(); i++) {
+                    JSONObject e = enrollmentsArray.getJSONObject(i);
+                    int courseId = e.getInt("courseId");
+                    Boolean isFree = courseIsFreeMap.get(courseId);
+                    if (isFree != null && isFree) {
+                        freeEnrollments++;
+                    } else {
+                        paidEnrollments++;
+                    }
+                }
+
+                int totalEnrollments = paidEnrollments + freeEnrollments;
+                chartData = new PieChartData(paidEnrollments, freeEnrollments, totalEnrollments);
+
+                cardList.add(new DashboardCard(
+                        "Total Courses", "Available courses",
+                        "school", android.R.color.holo_blue_light,
+                        courseCount, "courses"));
+                cardList.add(new DashboardCard(
+                        "Categories", "Course categories",
+                        "category", android.R.color.holo_green_light,
+                        categoryCount, "categories"));
+                cardList.add(new DashboardCard(
+                        "Students", "Registered students",
+                        "people", android.R.color.holo_orange_light,
+                        studentCount, "users"));
+                cardList.add(new DashboardCard(
+                        "Teachers & Admin", "Staff members",
+                        "admin_panel_settings", android.R.color.holo_red_light,
+                        staffCount, "users"));
+                cardList.add(new DashboardCard(
+                        "My Enrollments", "Enrolled courses",
+                        "assignment", android.R.color.holo_purple,
+                        enrollmentCount, "enrollments"));
+            } else {
+                cardList.add(new DashboardCard(
+                        "Total Courses", "Available courses",
+                        "school", android.R.color.holo_blue_light,
+                        courseCount, "courses"));
+                cardList.add(new DashboardCard(
+                        "Categories", "Course categories",
+                        "category", android.R.color.holo_green_light,
+                        categoryCount, "categories"));
+                cardList.add(new DashboardCard(
+                        "My Enrollments", "Enrolled courses",
+                        "assignment", android.R.color.holo_purple,
+                        enrollmentCount, "enrollments"));
+            }
+
+            final List<DashboardCard> finalCards = cardList;
+            final PieChartData finalChartData = chartData;
+            mainHandler.post(() -> {
+                cards.setValue(finalCards);
+                if (finalChartData != null) {
+                    pieChartData.setValue(finalChartData);
+                }
+                isLoading.setValue(false);
+            });
+
+        } catch (Exception e) {
+            mainHandler.post(() -> {
+                errorMessage.setValue("Unable to connect to server. Please try again later.");
+                isLoading.setValue(false);
+            });
+        }
     }
 }

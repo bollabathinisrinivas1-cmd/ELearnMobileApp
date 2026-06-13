@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Map;
 
 /**
  * Static HTTP client for communicating with the eLibrary backend API.
@@ -77,6 +79,60 @@ public class ApiClient {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(BASE_URL + path);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+
+            int statusCode = connection.getResponseCode();
+
+            if (statusCode >= 200 && statusCode < 300) {
+                String responseBody = readStream(connection.getInputStream());
+                return new JSONArray(responseBody);
+            } else {
+                String errorBody = readErrorStream(connection);
+                throw new ApiException(statusCode, errorBody);
+            }
+        } catch (ApiException e) {
+            throw e;
+        } catch (JSONException e) {
+            throw new ApiException(0, "Invalid JSON response: " + e.getMessage());
+        } catch (IOException e) {
+            throw new ApiException(0, "Network error: " + e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    /**
+     * Performs an authenticated GET request with query string parameters that returns a JSON array.
+     *
+     * @param path   the API endpoint path (e.g., "/courses")
+     * @param params a map of query parameter names to values (values will be URL-encoded)
+     * @param token  the Bearer token for authorization
+     * @return the parsed JSON array response
+     * @throws ApiException if the server returns a non-2xx status code
+     */
+    public static JSONArray getArrayWithParams(String path, Map<String, String> params, String token) throws ApiException {
+        HttpURLConnection connection = null;
+        try {
+            StringBuilder urlBuilder = new StringBuilder(BASE_URL + path);
+            if (params != null && !params.isEmpty()) {
+                urlBuilder.append("?");
+                boolean first = true;
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    if (!first) {
+                        urlBuilder.append("&");
+                    }
+                    urlBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                    urlBuilder.append("=");
+                    urlBuilder.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                    first = false;
+                }
+            }
+
+            URL url = new URL(urlBuilder.toString());
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization", "Bearer " + token);

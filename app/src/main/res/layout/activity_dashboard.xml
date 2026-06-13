@@ -24,85 +24,101 @@
             app:titleTextColor="@android:color/white">
 
             <ImageButton
-                android:id="@+id/logoutButton"
+                android:id="@+id/userMenuButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Logout"
+                android:contentDescription="User menu"
                 android:padding="8dp"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:src="@android:drawable/ic_menu_my_calendar"
                 app:tint="@android:color/white" />
 
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Welcome heading -->
-        <TextView
-            android:id="@+id/welcomeText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="Welcome to eLibrary"
-            android:textColor="#5c6bc0"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <!-- Content area (FrameLayout for stacking progress, error, recycler) -->
-        <FrameLayout
+        <!-- Scrollable content area below toolbar -->
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:fillViewport="true">
 
-            <!-- Loading ProgressBar (centered) -->
-            <ProgressBar
-                android:id="@+id/dashboardProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="visible" />
-
-            <!-- Error message TextView -->
-            <TextView
-                android:id="@+id/dashboardError"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:padding="24dp"
-                android:textColor="@android:color/holo_red_dark"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:orientation="vertical">
 
-            <!-- RecyclerView for dashboard cards -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/dashboardRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:padding="8dp"
-                android:visibility="gone"
-                tools:listitem="@layout/item_dashboard_card" />
+                <!-- Welcome heading -->
+                <TextView
+                    android:id="@+id/welcomeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:text="Welcome to eLibrary"
+                    android:textColor="#5c6bc0"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-        </FrameLayout>
+                <!-- Content area (FrameLayout for stacking progress, error, recycler) -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-        <!-- Pie chart placeholder area (Admin only) -->
-        <FrameLayout
-            android:id="@+id/pieChartContainer"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_margin="16dp"
-            android:visibility="gone">
+                    <!-- Loading ProgressBar (centered) -->
+                    <ProgressBar
+                        android:id="@+id/dashboardProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="visible" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Enrollment Statistics"
-                android:textColor="#666666"
-                android:textSize="14sp" />
+                    <!-- Error message TextView -->
+                    <TextView
+                        android:id="@+id/dashboardError"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:padding="24dp"
+                        android:textColor="@android:color/holo_red_dark"
+                        android:textSize="16sp"
+                        android:visibility="gone" />
 
-        </FrameLayout>
+                    <!-- RecyclerView for dashboard cards -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/dashboardRecyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        android:padding="8dp"
+                        android:visibility="gone"
+                        tools:listitem="@layout/item_dashboard_card" />
+
+                </FrameLayout>
+
+                <!-- Pie chart placeholder area (Admin only) -->
+                <FrameLayout
+                    android:id="@+id/pieChartContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_margin="16dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="Enrollment Statistics"
+                        android:textColor="#666666"
+                        android:textSize="14sp" />
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
 
     </LinearLayout>
 

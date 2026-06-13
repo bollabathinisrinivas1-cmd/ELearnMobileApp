@@ -2,8 +2,11 @@ package com.example.elearn.ui.dashboard;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -37,9 +40,27 @@ public class DashboardActivity extends AppCompatActivity {
         // Initialize AuthService and check login state
         authService = new AuthService(this);
         if (!authService.isLoggedIn()) {
-            navigateToLogin();
+            // Attempt token refresh on a background thread
+            new Thread(() -> {
+                boolean refreshed = authService.refreshToken();
+                runOnUiThread(() -> {
+                    if (refreshed) {
+                        initDashboard();
+                    } else {
+                        navigateToLogin();
+                    }
+                });
+            }).start();
             return;
         }
+
+        initDashboard();
+    }
+
+    /**
+     * Initializes the dashboard UI after authentication is confirmed.
+     */
+    private void initDashboard() {
 
         // Inflate layout with ViewBinding
         binding = ActivityDashboardBinding.inflate(getLayoutInflater());
@@ -68,17 +89,47 @@ public class DashboardActivity extends AppCompatActivity {
             binding.welcomeText.setText("Welcome, " + userName);
         }
 
-        // Set up logout button
-        binding.logoutButton.setOnClickListener(v -> {
-            authService.clearSession();
-            navigateToLogin();
-        });
+        // Set up user menu button
+        binding.userMenuButton.setOnClickListener(v -> showUserMenu(v));
 
         // Observe ViewModel LiveData
         observeViewModel();
 
         // Load dashboard data
         viewModel.loadDashboardData(authService);
+    }
+
+    /**
+     * Displays a popup user menu anchored to the given view.
+     */
+    private void showUserMenu(View anchor) {
+        PopupMenu popup = new PopupMenu(this, anchor);
+        popup.inflate(R.menu.user_menu);
+
+        // Set user name as the first item title (disabled header)
+        MenuItem userNameItem = popup.getMenu().findItem(R.id.menu_user_name);
+        String userName = authService.getUserName();
+        if (userName != null && !userName.isEmpty()) {
+            userNameItem.setTitle(userName);
+        }
+
+        popup.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.menu_sign_out) {
+                authService.clearSession();
+                navigateToLogin();
+                return true;
+            } else if (id == R.id.menu_profile) {
+                Toast.makeText(this, "Profile - Coming Soon", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (id == R.id.menu_settings) {
+                Toast.makeText(this, "Settings - Coming Soon", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            return false;
+        });
+
+        popup.show();
     }
 
     /**
