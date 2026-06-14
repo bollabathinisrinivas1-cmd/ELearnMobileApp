@@ -10,16 +10,22 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 /**
- * Custom View that draws a two-segment pie chart using Canvas.drawArc().
- * Displays paid students (blue) and free students (grey) segments.
+ * Custom View that draws a two-segment pie chart with value labels.
+ * Displays paid users (green) and free users (pink) segments with counts.
  */
 public class PieChartView extends View {
 
     private float paidSweepAngle = 0f;
     private float freeSweepAngle = 0f;
+    private int paidCount = 0;
+    private int freeCount = 0;
+    private int totalCount = 0;
 
     private final Paint paidPaint;
     private final Paint freePaint;
+    private final Paint textPaint;
+    private final Paint centerTextPaint;
+    private final Paint centerSubTextPaint;
     private final RectF arcBounds = new RectF();
 
     private static final int PAID_COLOR = 0xFF4CAF50; // Green
@@ -43,16 +49,34 @@ public class PieChartView extends View {
         freePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         freePaint.setStyle(Paint.Style.FILL);
         freePaint.setColor(FREE_COLOR);
+
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(0xFFFFFFFF);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setFakeBoldText(true);
+
+        centerTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        centerTextPaint.setColor(0xFFFFFFFF);
+        centerTextPaint.setTextAlign(Paint.Align.CENTER);
+        centerTextPaint.setFakeBoldText(true);
+
+        centerSubTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        centerSubTextPaint.setColor(0xFFFFFFFF);
+        centerSubTextPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     /**
-     * Sets the pie chart data and recalculates arc sweep angles.
-     * The two segments always sum to 360 degrees.
+     * Sets the pie chart data with actual counts.
      *
-     * @param paidPercent percentage of paid students (0-100)
-     * @param freePercent percentage of free students (0-100)
+     * @param paidPercent percentage value for paid segment
+     * @param freePercent percentage value for free segment
+     * @param paid actual paid user count
+     * @param free actual free user count
      */
-    public void setData(float paidPercent, float freePercent) {
+    public void setData(float paidPercent, float freePercent, int paid, int free) {
+        this.paidCount = paid;
+        this.freeCount = free;
+        this.totalCount = paid + free;
         float total = paidPercent + freePercent;
         if (total == 0f) {
             paidSweepAngle = 0f;
@@ -65,15 +89,16 @@ public class PieChartView extends View {
     }
 
     /**
-     * Returns the calculated paid segment sweep angle in degrees.
+     * Sets the pie chart data (backward compatible).
      */
+    public void setData(float paidPercent, float freePercent) {
+        setData(paidPercent, freePercent, (int) paidPercent, (int) freePercent);
+    }
+
     public float getPaidSweepAngle() {
         return paidSweepAngle;
     }
 
-    /**
-     * Returns the calculated free segment sweep angle in degrees.
-     */
     public float getFreeSweepAngle() {
         return freeSweepAngle;
     }
@@ -85,13 +110,17 @@ public class PieChartView extends View {
         int width = getWidth();
         int height = getHeight();
         int size = Math.min(width, height);
-        float padding = size * 0.1f;
+        float padding = size * 0.05f;
 
         float left = (width - size) / 2f + padding;
         float top = (height - size) / 2f + padding;
         float right = left + size - 2 * padding;
         float bottom = top + size - 2 * padding;
         arcBounds.set(left, top, right, bottom);
+
+        float cx = (left + right) / 2f;
+        float cy = (top + bottom) / 2f;
+        float radius = (right - left) / 2f;
 
         // Draw paid segment (starts at top, -90 degrees)
         if (paidSweepAngle > 0f) {
@@ -101,6 +130,35 @@ public class PieChartView extends View {
         // Draw free segment (starts after paid segment)
         if (freeSweepAngle > 0f) {
             canvas.drawArc(arcBounds, -90f + paidSweepAngle, freeSweepAngle, true, freePaint);
+        }
+
+        // Draw value labels on each segment
+        textPaint.setTextSize(size * 0.09f);
+
+        // Paid segment label - position at midpoint of paid arc
+        if (paidSweepAngle > 20f && paidCount > 0) {
+            float paidMidAngle = -90f + paidSweepAngle / 2f;
+            float labelRadius = radius * 0.6f;
+            float paidLabelX = cx + (float) (labelRadius * Math.cos(Math.toRadians(paidMidAngle)));
+            float paidLabelY = cy + (float) (labelRadius * Math.sin(Math.toRadians(paidMidAngle)));
+            canvas.drawText(String.valueOf(paidCount), paidLabelX, paidLabelY + textPaint.getTextSize() / 3f, textPaint);
+        }
+
+        // Free segment label - position at midpoint of free arc
+        if (freeSweepAngle > 20f && freeCount > 0) {
+            float freeMidAngle = -90f + paidSweepAngle + freeSweepAngle / 2f;
+            float labelRadius = radius * 0.6f;
+            float freeLabelX = cx + (float) (labelRadius * Math.cos(Math.toRadians(freeMidAngle)));
+            float freeLabelY = cy + (float) (labelRadius * Math.sin(Math.toRadians(freeMidAngle)));
+            canvas.drawText(String.valueOf(freeCount), freeLabelX, freeLabelY + textPaint.getTextSize() / 3f, textPaint);
+        }
+
+        // Draw total count in center
+        if (totalCount > 0) {
+            centerTextPaint.setTextSize(size * 0.14f);
+            centerSubTextPaint.setTextSize(size * 0.07f);
+            canvas.drawText(String.valueOf(totalCount), cx, cy, centerTextPaint);
+            canvas.drawText("Students", cx, cy + centerTextPaint.getTextSize() * 0.8f, centerSubTextPaint);
         }
     }
 }

@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Toolbar with eLibrary title and logout button -->
+        <!-- Toolbar with eLibrary title and profile avatar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -23,17 +23,15 @@
             app:title="eLibrary"
             app:titleTextColor="@android:color/white">
 
-            <ImageButton
-                android:id="@+id/userMenuButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/profileAvatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="User menu"
-                android:padding="8dp"
-                android:src="@android:drawable/ic_menu_my_calendar"
-                app:tint="@android:color/white" />
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/avatar_1"
+                android:contentDescription="User profile"
+                android:clipToOutline="true" />
 
         </androidx.appcompat.widget.Toolbar>
 

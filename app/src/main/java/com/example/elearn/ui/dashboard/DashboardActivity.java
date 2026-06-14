@@ -1,9 +1,20 @@
 package com.example.elearn.ui.dashboard;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Base64;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,11 +27,17 @@ import com.example.elearn.R;
 import com.example.elearn.adapters.DashboardCardAdapter;
 import com.example.elearn.auth.AuthService;
 import com.example.elearn.databinding.ActivityDashboardBinding;
+import com.example.elearn.network.ApiClient;
 import com.example.elearn.ui.categories.CategoriesActivity;
 import com.example.elearn.ui.courses.CoursesActivity;
 import com.example.elearn.ui.enrollments.EnrollmentsActivity;
 import com.example.elearn.ui.login.LoginActivity;
 import com.example.elearn.ui.users.UsersActivity;
+
+import org.json.JSONObject;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Dashboard screen activity. Displays role-based summary cards and statistics.
@@ -89,8 +106,11 @@ public class DashboardActivity extends AppCompatActivity {
             binding.welcomeText.setText("Welcome, " + userName);
         }
 
-        // Set up user menu button
-        binding.userMenuButton.setOnClickListener(v -> showUserMenu(v));
+        // Set up profile avatar click
+        binding.profileAvatar.setOnClickListener(v -> showUserMenu(v));
+
+        // Load profile image from API
+        loadProfileImage();
 
         // Observe ViewModel LiveData
         observeViewModel();
@@ -100,13 +120,13 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     /**
-     * Displays a popup user menu anchored to the given view.
+     * Displays a popup menu with profile name, Settings, and Sign Out.
      */
     private void showUserMenu(View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor);
         popup.inflate(R.menu.user_menu);
 
-        // Set user name as the first item title (disabled header)
+        // Set user name as the first item title
         MenuItem userNameItem = popup.getMenu().findItem(R.id.menu_user_name);
         String userName = authService.getUserName();
         if (userName != null && !userName.isEmpty()) {
@@ -130,6 +150,62 @@ public class DashboardActivity extends AppCompatActivity {
         });
 
         popup.show();
+    }
+
+    /**
+     * Fetches the user's profile image from the API and sets it on the avatar.
+     */
+    private void loadProfileImage() {
+        String userId = authService.getUserId();
+        String token = authService.getAccessToken();
+        if (userId == null || token == null) return;
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                JSONObject profile = ApiClient.getObject("/users/" + userId + "/profile", token);
+                String imageUrl = profile.optString("profileImageUrl", "");
+
+                if (!imageUrl.isEmpty() && imageUrl.startsWith("data:image")) {
+                    // Parse base64 data URI: "data:image/png;base64,XXXXX"
+                    String base64Data = imageUrl.substring(imageUrl.indexOf(",") + 1);
+                    byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                    if (bitmap != null) {
+                        Bitmap circularBitmap = getCircularBitmap(bitmap);
+                        handler.post(() -> {
+                            binding.profileAvatar.setImageBitmap(circularBitmap);
+                            binding.profileAvatar.setBackground(null);
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                // Silently fail - keep default avatar
+            }
+        });
+    }
+
+    /**
+     * Creates a circular bitmap from a rectangular source bitmap.
+     */
+    private Bitmap getCircularBitmap(Bitmap bitmap) {
+        int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+        Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+
+        Rect rect = new Rect(0, 0, size, size);
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint);
+
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
     }
 
     /**
@@ -214,7 +290,8 @@ public class DashboardActivity extends AppCompatActivity {
                 PieChartView pieChartView = new PieChartView(this);
                 float paidPercent = pieChartData.getPaidPercent();
                 float freePercent = 100f - paidPercent;
-                pieChartView.setData(paidPercent, freePercent);
+                pieChartView.setData(paidPercent, freePercent,
+                        pieChartData.getPaidStudents(), pieChartData.getFreeStudents());
 
                 android.widget.FrameLayout pieChartFrame = binding.getRoot().findViewById(R.id.pieChartFrame);
                 pieChartFrame.removeAllViews();
