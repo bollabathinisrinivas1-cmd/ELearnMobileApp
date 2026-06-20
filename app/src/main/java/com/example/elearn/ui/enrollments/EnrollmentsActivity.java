@@ -17,7 +17,6 @@ import com.example.elearn.databinding.ActivityEnrollmentsBinding;
 import com.example.elearn.models.Enrollment;
 import com.example.elearn.network.ApiClient;
 import com.example.elearn.network.ApiException;
-import com.example.elearn.ui.courses.CoursesActivity;
 import com.example.elearn.ui.login.LoginActivity;
 
 import org.json.JSONArray;
@@ -88,7 +87,8 @@ public class EnrollmentsActivity extends AppCompatActivity {
                     } else {
                         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
                         boolean admin = authService.isAdmin();
-                        EnrollmentAdapter adapter = new EnrollmentAdapter(enrollments, new EnrollmentAdapter.OnEnrollmentActionListener() {
+                        final EnrollmentAdapter[] adapterHolder = new EnrollmentAdapter[1];
+                        adapterHolder[0] = new EnrollmentAdapter(enrollments, new EnrollmentAdapter.OnEnrollmentActionListener() {
                             @Override
                             public void onActionClick(Enrollment enrollment) {
                                 Toast.makeText(EnrollmentsActivity.this, "Course feature coming soon", Toast.LENGTH_SHORT).show();
@@ -96,7 +96,6 @@ public class EnrollmentsActivity extends AppCompatActivity {
 
                             @Override
                             public void onViewDetails(Enrollment enrollment) {
-                                // Show course details dialog
                                 new AlertDialog.Builder(EnrollmentsActivity.this)
                                         .setTitle(enrollment.getCourseName())
                                         .setMessage("Course: " + enrollment.getCourseName() + "\nProgress: " + enrollment.getProgressPercent() + "%\nStatus: " + enrollment.getStatusLabel())
@@ -109,12 +108,12 @@ public class EnrollmentsActivity extends AppCompatActivity {
                                 new AlertDialog.Builder(EnrollmentsActivity.this)
                                         .setTitle("Delete Enrollment")
                                         .setMessage("Are you sure you want to delete enrollment for \"" + enrollment.getCourseName() + "\"?")
-                                        .setPositiveButton("Delete", (dialog, which) -> deleteEnrollment(enrollment, enrollments, adapter))
+                                        .setPositiveButton("Delete", (dialog, which) -> deleteEnrollment(enrollment, enrollments, adapterHolder[0]))
                                         .setNegativeButton("Cancel", null)
                                         .show();
                             }
                         }, admin);
-                        binding.recyclerView.setAdapter(adapter);
+                        binding.recyclerView.setAdapter(adapterHolder[0]);
                     }
                 });
 
