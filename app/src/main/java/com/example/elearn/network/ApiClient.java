@@ -198,6 +198,85 @@ public class ApiClient {
     }
 
     /**
+     * Performs an authenticated POST request with a JSON body.
+     *
+     * @param path  the API endpoint path
+     * @param body  the JSON request body
+     * @param token the Bearer token for authorization
+     * @return the parsed JSON response object
+     * @throws ApiException if the server returns a non-2xx status code
+     */
+    public static JSONObject postWithAuth(String path, JSONObject body, String token) throws ApiException {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(BASE_URL + path);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+            connection.setDoOutput(true);
+
+            byte[] bodyBytes = body.toString().getBytes("UTF-8");
+            OutputStream os = connection.getOutputStream();
+            os.write(bodyBytes);
+            os.flush();
+            os.close();
+
+            int statusCode = connection.getResponseCode();
+
+            if (statusCode >= 200 && statusCode < 300) {
+                String responseBody = readStream(connection.getInputStream());
+                return new JSONObject(responseBody);
+            } else {
+                String errorBody = readErrorStream(connection);
+                throw new ApiException(statusCode, errorBody);
+            }
+        } catch (ApiException e) {
+            throw e;
+        } catch (JSONException e) {
+            throw new ApiException(0, "Invalid JSON response: " + e.getMessage());
+        } catch (IOException e) {
+            throw new ApiException(0, "Network error: " + e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    /**
+     * Performs an authenticated DELETE request.
+     *
+     * @param path  the API endpoint path (e.g., "/enrollments/{id}")
+     * @param token the Bearer token for authorization
+     * @throws ApiException if the server returns a non-2xx status code
+     */
+    public static void delete(String path, String token) throws ApiException {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(BASE_URL + path);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+
+            int statusCode = connection.getResponseCode();
+
+            if (statusCode < 200 || statusCode >= 300) {
+                String errorBody = readErrorStream(connection);
+                throw new ApiException(statusCode, errorBody);
+            }
+        } catch (ApiException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new ApiException(0, "Network error: " + e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    /**
      * Reads all content from an InputStream into a String.
      */
     private static String readStream(InputStream inputStream) throws IOException {

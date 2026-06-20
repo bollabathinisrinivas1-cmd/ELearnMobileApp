@@ -7,9 +7,9 @@ import org.json.JSONObject;
  * Includes progress tracking and status/button label computation.
  */
 public class Enrollment {
-    private int id;
-    private int userId;
-    private int courseId;
+    private String id;
+    private String userId;
+    private String courseId;
     private String courseName;
     private String enrolledAt;
     private int progressPercent;
@@ -24,10 +24,10 @@ public class Enrollment {
      */
     public static Enrollment fromJson(JSONObject json) {
         Enrollment enrollment = new Enrollment();
-        enrollment.id = json.optInt("id", 0);
-        enrollment.userId = json.optInt("userId", 0);
-        enrollment.courseId = json.optInt("courseId", 0);
-        enrollment.courseName = json.optString("courseName", "");
+        enrollment.id = json.optString("id", "");
+        enrollment.userId = json.optString("userId", "");
+        enrollment.courseId = json.optString("courseId", "");
+        enrollment.courseName = json.optString("courseName", "Course");
         enrollment.enrolledAt = json.optString("enrolledAt", "");
         enrollment.progressPercent = json.optInt("progressPercent", 0);
         enrollment.completed = json.optBoolean("completed", false);
@@ -56,15 +56,15 @@ public class Enrollment {
         return "Start";
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public int getCourseId() {
+    public String getCourseId() {
         return courseId;
     }
 

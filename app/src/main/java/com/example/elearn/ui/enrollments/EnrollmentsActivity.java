@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -15,6 +17,7 @@ import com.example.elearn.databinding.ActivityEnrollmentsBinding;
 import com.example.elearn.models.Enrollment;
 import com.example.elearn.network.ApiClient;
 import com.example.elearn.network.ApiException;
+import com.example.elearn.ui.courses.CoursesActivity;
 import com.example.elearn.ui.login.LoginActivity;
 
 import org.json.JSONArray;
@@ -84,7 +87,33 @@ public class EnrollmentsActivity extends AppCompatActivity {
                         binding.emptyText.setVisibility(View.VISIBLE);
                     } else {
                         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                        EnrollmentAdapter adapter = new EnrollmentAdapter(enrollments);
+                        boolean admin = authService.isAdmin();
+                        EnrollmentAdapter adapter = new EnrollmentAdapter(enrollments, new EnrollmentAdapter.OnEnrollmentActionListener() {
+                            @Override
+                            public void onActionClick(Enrollment enrollment) {
+                                Toast.makeText(EnrollmentsActivity.this, "Course feature coming soon", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onViewDetails(Enrollment enrollment) {
+                                // Show course details dialog
+                                new AlertDialog.Builder(EnrollmentsActivity.this)
+                                        .setTitle(enrollment.getCourseName())
+                                        .setMessage("Course: " + enrollment.getCourseName() + "\nProgress: " + enrollment.getProgressPercent() + "%\nStatus: " + enrollment.getStatusLabel())
+                                        .setPositiveButton("Close", null)
+                                        .show();
+                            }
+
+                            @Override
+                            public void onDelete(Enrollment enrollment) {
+                                new AlertDialog.Builder(EnrollmentsActivity.this)
+                                        .setTitle("Delete Enrollment")
+                                        .setMessage("Are you sure you want to delete enrollment for \"" + enrollment.getCourseName() + "\"?")
+                                        .setPositiveButton("Delete", (dialog, which) -> deleteEnrollment(enrollment, enrollments, adapter))
+                                        .setNegativeButton("Cancel", null)
+                                        .show();
+                            }
+                        }, admin);
                         binding.recyclerView.setAdapter(adapter);
                     }
                 });
@@ -110,6 +139,33 @@ public class EnrollmentsActivity extends AppCompatActivity {
                     binding.errorText.setText("An unexpected error occurred. Please try again.");
                     binding.errorText.setVisibility(View.VISIBLE);
                 });
+            }
+        });
+    }
+
+    /**
+     * Deletes an enrollment via API and removes it from the list.
+     */
+    private void deleteEnrollment(Enrollment enrollment, List<Enrollment> enrollments, EnrollmentAdapter adapter) {
+        String token = authService.getAccessToken();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                // DELETE /enrollments/{id}
+                ApiClient.delete("/enrollments/" + enrollment.getId(), token);
+                handler.post(() -> {
+                    enrollments.remove(enrollment);
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(this, "Enrollment deleted", Toast.LENGTH_SHORT).show();
+                    if (enrollments.isEmpty()) {
+                        binding.emptyText.setText("No enrollments found");
+                        binding.emptyText.setVisibility(View.VISIBLE);
+                    }
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to delete enrollment", Toast.LENGTH_SHORT).show());
             }
         });
     }

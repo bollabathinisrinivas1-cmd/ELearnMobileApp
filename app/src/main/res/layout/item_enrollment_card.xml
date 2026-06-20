@@ -14,49 +14,145 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/enrollmentCourseName"
+        <!-- Header: Course name and enrolled date -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#5c6bc0"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            tools:text="Introduction to Java" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/enrolledDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#999999"
-            android:textSize="12sp"
-            tools:text="Enrolled: Jan 15, 2024" />
+            <TextView
+                android:id="@+id/enrollmentIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/holo_blue_dark"
+                android:gravity="center"
+                android:text="🎓"
+                android:textSize="18sp" />
 
-        <ProgressBar
-            android:id="@+id/enrollmentProgress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:max="100"
-            tools:progress="45" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/enrollmentCourseName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="Introduction to Java" />
+
+                <TextView
+                    android:id="@+id/enrolledDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="#999999"
+                    android:textSize="12sp"
+                    tools:text="Enrolled on Jan 15, 2024" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Status chip -->
         <TextView
             android:id="@+id/enrollmentStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#666666"
+            android:layout_marginTop="12dp"
+            android:paddingStart="12dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:textColor="@android:color/white"
             android:textSize="12sp"
+            android:textStyle="bold"
             tools:text="In Progress" />
 
-        <Button
-            android:id="@+id/enrollmentActionButton"
-            android:layout_width="wrap_content"
+        <!-- Progress section -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="12sp"
-            tools:text="Continue" />
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Progress"
+                    android:textColor="#666666"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/progressPercent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:textSize="13sp"
+                    tools:text="45%" />
+
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/enrollmentProgress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="4dp"
+                android:max="100"
+                tools:progress="45" />
+
+        </LinearLayout>
+
+        <!-- Action buttons row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/enrollmentActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#FFC107"
+                tools:text="Start Course" />
+
+            <Button
+                android:id="@+id/viewDetailsButton"
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:text="View Details"
+                android:textSize="12sp"
+                android:textColor="#333333" />
+
+            <Button
+                android:id="@+id/deleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:text="Delete"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#F44336"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -52,7 +52,7 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.ViewHolder
         if (course.isFree()) {
             holder.coursePrice.setText("Free");
         } else {
-            holder.coursePrice.setText(String.format("$%.2f", course.getPrice()));
+            holder.coursePrice.setText(String.format("₹%.2f", course.getPrice()));
         }
 
         holder.courseDuration.setText(String.format("%.1f hours", course.getDurationHours()));
