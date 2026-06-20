@@ -23,16 +23,24 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.ViewHolder
     private final List<Course> courses;
     private final OnCourseClickListener listener;
 
-    /**
-     * Interface for handling "View Details" button clicks on a course card.
-     */
     public interface OnCourseClickListener {
         void onCourseClick(Course course);
     }
 
+    public interface OnCourseLongClickListener {
+        void onCourseLongClick(Course course);
+    }
+
+    private final OnCourseLongClickListener longClickListener;
+
     public CourseAdapter(List<Course> courses, OnCourseClickListener listener) {
+        this(courses, listener, null);
+    }
+
+    public CourseAdapter(List<Course> courses, OnCourseClickListener listener, OnCourseLongClickListener longClickListener) {
         this.courses = courses;
         this.listener = listener;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -61,6 +69,14 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.ViewHolder
             if (listener != null) {
                 listener.onCourseClick(course);
             }
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onCourseLongClick(course);
+                return true;
+            }
+            return false;
         });
     }
 

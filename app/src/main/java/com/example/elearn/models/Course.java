@@ -7,7 +7,7 @@ import org.json.JSONObject;
  * Contains course metadata including pricing, duration, and category info.
  */
 public class Course {
-    private int id;
+    private String id;
     private String title;
     private String description;
     private double price;
@@ -17,7 +17,7 @@ public class Course {
     private String level;
     private String thumbnailUrl;
     private int categoryId;
-    private int instructorId;
+    private String instructorId;
     private String createdAt;
 
     /**
@@ -29,7 +29,7 @@ public class Course {
      */
     public static Course fromJson(JSONObject json) {
         Course course = new Course();
-        course.id = json.optInt("id", 0);
+        course.id = json.optString("id", "");
         course.title = json.optString("title", "");
         course.description = json.optString("description", "");
         course.price = json.optDouble("price", 0.0);
@@ -39,12 +39,12 @@ public class Course {
         course.level = json.optString("level", "");
         course.thumbnailUrl = json.optString("thumbnailUrl", "");
         course.categoryId = json.optInt("categoryId", 0);
-        course.instructorId = json.optInt("instructorId", 0);
+        course.instructorId = json.optString("instructorId", "");
         course.createdAt = json.optString("createdAt", "");
         return course;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
@@ -84,7 +84,7 @@ public class Course {
         return categoryId;
     }
 
-    public int getInstructorId() {
+    public String getInstructorId() {
         return instructorId;
     }
 

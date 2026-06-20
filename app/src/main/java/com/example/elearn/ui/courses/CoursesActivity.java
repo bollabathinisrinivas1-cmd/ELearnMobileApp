@@ -98,7 +98,10 @@ public class CoursesActivity extends AppCompatActivity {
                         binding.emptyText.setVisibility(View.VISIBLE);
                     } else {
                         binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-                        binding.recyclerView.setAdapter(new CourseAdapter(courses, this::showCourseDetailsDialog));
+                        String role = authService.getUserRole();
+                        boolean canManage = "Admin".equals(role) || "Teacher".equals(role);
+                        binding.recyclerView.setAdapter(new CourseAdapter(courses, this::showCourseDetailsDialog,
+                                canManage ? this::showCourseOptionsDialog : null));
                         binding.recyclerView.setVisibility(View.VISIBLE);
                     }
                 });
@@ -149,12 +152,37 @@ public class CoursesActivity extends AppCompatActivity {
         EditText priceInput = dialogView.findViewById(R.id.inputPrice);
         EditText durationInput = dialogView.findViewById(R.id.inputDuration);
         Spinner levelSpinner = dialogView.findViewById(R.id.spinnerLevel);
+        Spinner categorySpinner = dialogView.findViewById(R.id.spinnerCategory);
         CheckBox isFreeCheckbox = dialogView.findViewById(R.id.checkboxIsFree);
 
         ArrayAdapter<String> levelAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item,
                 new String[]{"Beginner", "Intermediate", "Advanced"});
         levelSpinner.setAdapter(levelAdapter);
+
+        // Fetch categories and populate spinner
+        String token = authService.getAccessToken();
+        List<String> categoryNames = new ArrayList<>();
+        List<Integer> categoryIds = new ArrayList<>();
+        categoryNames.add("Select Category");
+        categoryIds.add(0);
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                JSONArray cats = ApiClient.getArray("/categories", token);
+                for (int i = 0; i < cats.length(); i++) {
+                    JSONObject cat = cats.getJSONObject(i);
+                    categoryNames.add(cat.optString("name", ""));
+                    categoryIds.add(cat.optInt("id", 0));
+                }
+            } catch (Exception ignored) {}
+            handler.post(() -> {
+                ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_spinner_dropdown_item, categoryNames);
+                categorySpinner.setAdapter(catAdapter);
+            });
+        });
 
         new AlertDialog.Builder(this)
                 .setTitle("Create Course")
@@ -166,6 +194,9 @@ public class CoursesActivity extends AppCompatActivity {
                         return;
                     }
 
+                    int selectedCatPos = categorySpinner.getSelectedItemPosition();
+                    int selectedCatId = selectedCatPos > 0 ? categoryIds.get(selectedCatPos) : (categoryId != -1 ? categoryId : 1);
+
                     JSONObject body = new JSONObject();
                     try {
                         body.put("title", title);
@@ -174,7 +205,7 @@ public class CoursesActivity extends AppCompatActivity {
                         body.put("isFree", isFreeCheckbox.isChecked());
                         body.put("durationHours", Integer.parseInt(durationInput.getText().toString().isEmpty() ? "1" : durationInput.getText().toString()));
                         body.put("level", levelSpinner.getSelectedItem().toString());
-                        body.put("categoryId", categoryId != -1 ? categoryId : 1);
+                        body.put("categoryId", selectedCatId);
                         body.put("instructorId", authService.getUserId());
                     } catch (Exception e) {
                         Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
@@ -199,6 +230,151 @@ public class CoursesActivity extends AppCompatActivity {
                 });
             } catch (Exception e) {
                 handler.post(() -> Toast.makeText(this, "Failed to create course", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void showCourseOptionsDialog(Course course) {
+        new AlertDialog.Builder(this)
+                .setTitle(course.getTitle())
+                .setItems(new String[]{"Edit", "Delete"}, (dialog, which) -> {
+                    if (which == 0) {
+                        showEditCourseDialog(course);
+                    } else {
+                        confirmDeleteCourse(course);
+                    }
+                })
+                .show();
+    }
+
+    private void showEditCourseDialog(Course course) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_course, null);
+
+        EditText titleInput = dialogView.findViewById(R.id.inputTitle);
+        EditText descInput = dialogView.findViewById(R.id.inputDescription);
+        EditText priceInput = dialogView.findViewById(R.id.inputPrice);
+        EditText durationInput = dialogView.findViewById(R.id.inputDuration);
+        Spinner levelSpinner = dialogView.findViewById(R.id.spinnerLevel);
+        Spinner categorySpinner = dialogView.findViewById(R.id.spinnerCategory);
+        CheckBox isFreeCheckbox = dialogView.findViewById(R.id.checkboxIsFree);
+
+        // Pre-fill with current values
+        titleInput.setText(course.getTitle());
+        descInput.setText(course.getDescription());
+        priceInput.setText(String.valueOf(course.getPrice()));
+        durationInput.setText(String.valueOf((int) course.getDurationHours()));
+        isFreeCheckbox.setChecked(course.isFree());
+
+        ArrayAdapter<String> levelAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"Beginner", "Intermediate", "Advanced"});
+        levelSpinner.setAdapter(levelAdapter);
+        String level = course.getLevel();
+        if ("Intermediate".equals(level)) levelSpinner.setSelection(1);
+        else if ("Advanced".equals(level)) levelSpinner.setSelection(2);
+
+        // Load categories
+        String token = authService.getAccessToken();
+        List<String> categoryNames = new ArrayList<>();
+        List<Integer> categoryIds = new ArrayList<>();
+        categoryNames.add("Select Category");
+        categoryIds.add(0);
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                JSONArray cats = ApiClient.getArray("/categories", token);
+                for (int i = 0; i < cats.length(); i++) {
+                    JSONObject cat = cats.getJSONObject(i);
+                    categoryNames.add(cat.optString("name", ""));
+                    categoryIds.add(cat.optInt("id", 0));
+                }
+            } catch (Exception ignored) {}
+            handler.post(() -> {
+                ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_spinner_dropdown_item, categoryNames);
+                categorySpinner.setAdapter(catAdapter);
+                // Select current category
+                int currentCatId = course.getCategoryId();
+                for (int i = 0; i < categoryIds.size(); i++) {
+                    if (categoryIds.get(i) == currentCatId) {
+                        categorySpinner.setSelection(i);
+                        break;
+                    }
+                }
+            });
+        });
+
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Course")
+                .setView(dialogView)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String title = titleInput.getText().toString().trim();
+                    if (title.isEmpty()) {
+                        Toast.makeText(this, "Title is required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int selectedCatPos = categorySpinner.getSelectedItemPosition();
+                    int selectedCatId = selectedCatPos > 0 ? categoryIds.get(selectedCatPos) : course.getCategoryId();
+
+                    JSONObject body = new JSONObject();
+                    try {
+                        body.put("title", title);
+                        body.put("description", descInput.getText().toString().trim());
+                        body.put("price", Double.parseDouble(priceInput.getText().toString().isEmpty() ? "0" : priceInput.getText().toString()));
+                        body.put("isFree", isFreeCheckbox.isChecked());
+                        body.put("durationHours", Integer.parseInt(durationInput.getText().toString().isEmpty() ? "1" : durationInput.getText().toString()));
+                        body.put("level", levelSpinner.getSelectedItem().toString());
+                        body.put("categoryId", selectedCatId);
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    updateCourse(course.getId(), body);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void updateCourse(String courseId, JSONObject body) {
+        String token = authService.getAccessToken();
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                ApiClient.put("/courses/" + courseId, body, token);
+                handler.post(() -> {
+                    Toast.makeText(this, "Course updated", Toast.LENGTH_SHORT).show();
+                    loadCourses();
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to update course", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void confirmDeleteCourse(Course course) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Course")
+                .setMessage("Are you sure you want to delete \"" + course.getTitle() + "\"?")
+                .setPositiveButton("Delete", (dialog, which) -> deleteCourse(course.getId()))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteCourse(String courseId) {
+        String token = authService.getAccessToken();
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                ApiClient.delete("/courses/" + courseId, token);
+                handler.post(() -> {
+                    Toast.makeText(this, "Course deleted", Toast.LENGTH_SHORT).show();
+                    loadCourses();
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to delete course", Toast.LENGTH_SHORT).show());
             }
         });
     }

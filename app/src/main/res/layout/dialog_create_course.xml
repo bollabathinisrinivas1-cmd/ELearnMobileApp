@@ -34,6 +34,12 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Spinner
+        android:id="@+id/spinnerCategory"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
         android:id="@+id/spinnerLevel"
         android:layout_width="match_parent"
         android:layout_height="48dp"

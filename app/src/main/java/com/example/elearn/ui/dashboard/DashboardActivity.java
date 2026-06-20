@@ -119,6 +119,15 @@ public class DashboardActivity extends AppCompatActivity {
         viewModel.loadDashboardData(authService);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reload dashboard data when returning from other activities (e.g., after deleting enrollment)
+        if (viewModel != null && authService != null) {
+            viewModel.loadDashboardData(authService);
+        }
+    }
+
     /**
      * Displays a popup menu with profile name, Settings, and Sign Out.
      */
@@ -140,7 +149,7 @@ public class DashboardActivity extends AppCompatActivity {
                 navigateToLogin();
                 return true;
             } else if (id == R.id.menu_profile) {
-                Toast.makeText(this, "Profile - Coming Soon", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(DashboardActivity.this, com.example.elearn.ui.profile.ProfileActivity.class));
                 return true;
             } else if (id == R.id.menu_settings) {
                 Toast.makeText(this, "Settings - Coming Soon", Toast.LENGTH_SHORT).show();

@@ -64,15 +64,32 @@ public class EnrollmentsActivity extends AppCompatActivity {
                     JSONObject obj = response.getJSONObject(i);
                     Enrollment enrollment = Enrollment.fromJson(obj);
 
-                    // Fetch course details to get the course name
-                    try {
-                        String courseId = obj.optString("courseId", "");
-                        if (!courseId.isEmpty()) {
+                    String courseId = obj.optString("courseId", "");
+                    if (!courseId.isEmpty()) {
+                        // Fetch course details to get the course name
+                        try {
                             JSONObject course = ApiClient.getObject("/courses/" + courseId, token);
                             enrollment.setCourseName(course.optString("title", "Course"));
-                        }
-                    } catch (Exception ignored) {
-                        // Keep default course name if fetch fails
+                        } catch (Exception ignored) {}
+
+                        // Fetch progress: get lessons count and completed lessons count
+                        try {
+                            JSONArray lessons = ApiClient.getArray("/courses/" + courseId + "/lessons", token);
+                            int totalLessons = lessons.length();
+
+                            if (totalLessons > 0) {
+                                JSONArray progress = ApiClient.getArray("/course-progress/" + userId + "/" + courseId, token);
+                                int completedCount = 0;
+                                for (int j = 0; j < progress.length(); j++) {
+                                    if (progress.getJSONObject(j).optBoolean("isCompleted", false)) {
+                                        completedCount++;
+                                    }
+                                }
+                                int percent = Math.round((float) completedCount / totalLessons * 100);
+                                enrollment.setProgressPercent(percent);
+                                enrollment.setCompleted(completedCount == totalLessons);
+                            }
+                        } catch (Exception ignored) {}
                     }
 
                     enrollments.add(enrollment);
@@ -91,7 +108,9 @@ public class EnrollmentsActivity extends AppCompatActivity {
                         adapterHolder[0] = new EnrollmentAdapter(enrollments, new EnrollmentAdapter.OnEnrollmentActionListener() {
                             @Override
                             public void onActionClick(Enrollment enrollment) {
-                                Toast.makeText(EnrollmentsActivity.this, "Course feature coming soon", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(EnrollmentsActivity.this, 
+                                    enrollment.getProgressPercent() == 100 ? "Review Course - Coming Soon" : "Start/Continue Course - Coming Soon", 
+                                    Toast.LENGTH_SHORT).show();
                             }
 
                             @Override

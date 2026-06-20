@@ -32,9 +32,20 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         void onCategoryClick(Category category);
     }
 
+    public interface OnCategoryLongClickListener {
+        void onCategoryLongClick(Category category);
+    }
+
+    private final OnCategoryLongClickListener longClickListener;
+
     public CategoryAdapter(List<Category> categories, OnCategoryClickListener listener) {
+        this(categories, listener, null);
+    }
+
+    public CategoryAdapter(List<Category> categories, OnCategoryClickListener listener, OnCategoryLongClickListener longClickListener) {
         this.categories = categories;
         this.listener = listener;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -66,6 +77,14 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             if (listener != null) {
                 listener.onCategoryClick(category);
             }
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onCategoryLongClick(category);
+                return true;
+            }
+            return false;
         });
     }
 

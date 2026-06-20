@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 
@@ -28,7 +31,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Activity that displays a grid of course categories fetched from the API.
- * Tapping a category navigates to CoursesActivity filtered by that category.
+ * Admin users can add new categories via FAB.
  */
 public class CategoriesActivity extends AppCompatActivity {
 
@@ -41,14 +44,25 @@ public class CategoriesActivity extends AppCompatActivity {
         binding = ActivityCategoriesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Set up toolbar with back navigation
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         authService = new AuthService(this);
-        String token = authService.getAccessToken();
 
-        // Show progress bar initially
+        // Show Add Category FAB for Admin
+        if (authService.isAdmin()) {
+            binding.fabAddCategory.setVisibility(View.VISIBLE);
+            binding.fabAddCategory.setOnClickListener(v -> showAddCategoryDialog());
+        }
+
+        loadCategories();
+    }
+
+    private void loadCategories() {
+        String token = authService.getAccessToken();
         binding.progressBar.setVisibility(View.VISIBLE);
+        binding.recyclerView.setVisibility(View.GONE);
+        binding.emptyText.setVisibility(View.GONE);
+        binding.errorText.setVisibility(View.GONE);
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -59,8 +73,7 @@ public class CategoriesActivity extends AppCompatActivity {
 
                 List<Category> categories = new ArrayList<>();
                 for (int i = 0; i < response.length(); i++) {
-                    JSONObject obj = response.getJSONObject(i);
-                    categories.add(Category.fromJson(obj));
+                    categories.add(Category.fromJson(response.getJSONObject(i)));
                 }
 
                 mainHandler.post(() -> {
@@ -70,12 +83,14 @@ public class CategoriesActivity extends AppCompatActivity {
                         binding.emptyText.setVisibility(View.VISIBLE);
                     } else {
                         binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+                        boolean isAdmin = authService.isAdmin();
                         CategoryAdapter adapter = new CategoryAdapter(categories, category -> {
                             Intent intent = new Intent(CategoriesActivity.this, CoursesActivity.class);
                             intent.putExtra("categoryId", category.getId());
                             startActivity(intent);
-                        });
+                        }, isAdmin ? category -> showCategoryOptionsDialog(category) : null);
                         binding.recyclerView.setAdapter(adapter);
+                        binding.recyclerView.setVisibility(View.VISIBLE);
                     }
                 });
 
@@ -90,16 +105,134 @@ public class CategoriesActivity extends AppCompatActivity {
                         startActivity(intent);
                         finish();
                     } else {
-                        binding.errorText.setText(statusCode >= 500 ? "Server error. Please try again later." : "An unexpected error occurred. Please try again.");
+                        binding.errorText.setText(statusCode >= 500 ? "Server error." : "An unexpected error occurred.");
                         binding.errorText.setVisibility(View.VISIBLE);
                     }
                 });
             } catch (Exception e) {
                 mainHandler.post(() -> {
                     binding.progressBar.setVisibility(View.GONE);
-                    binding.errorText.setText("An unexpected error occurred. Please try again.");
+                    binding.errorText.setText("An unexpected error occurred.");
                     binding.errorText.setVisibility(View.VISIBLE);
                 });
+            }
+        });
+    }
+
+    private void showAddCategoryDialog() {
+        EditText input = new EditText(this);
+        input.setHint("Category Name");
+        input.setPadding(48, 32, 48, 32);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Add Category")
+                .setView(input)
+                .setPositiveButton("Create", (dialog, which) -> {
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) {
+                        Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    createCategory(name);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void createCategory(String name) {
+        String token = authService.getAccessToken();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("name", name);
+                ApiClient.postWithAuth("/categories", body, token);
+                handler.post(() -> {
+                    Toast.makeText(this, "Category created", Toast.LENGTH_SHORT).show();
+                    loadCategories();
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to create category", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void showCategoryOptionsDialog(Category category) {
+        new AlertDialog.Builder(this)
+                .setTitle(category.getName())
+                .setItems(new String[]{"Edit", "Delete"}, (dialog, which) -> {
+                    if (which == 0) {
+                        showEditCategoryDialog(category);
+                    } else {
+                        confirmDeleteCategory(category);
+                    }
+                })
+                .show();
+    }
+
+    private void showEditCategoryDialog(Category category) {
+        EditText input = new EditText(this);
+        input.setHint("Category Name");
+        input.setText(category.getName());
+        input.setPadding(48, 32, 48, 32);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Category")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) {
+                        Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    updateCategory(category.getId(), name);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void updateCategory(int categoryId, String name) {
+        String token = authService.getAccessToken();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("name", name);
+                ApiClient.put("/categories/" + categoryId, body, token);
+                handler.post(() -> {
+                    Toast.makeText(this, "Category updated", Toast.LENGTH_SHORT).show();
+                    loadCategories();
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to update category", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void confirmDeleteCategory(Category category) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Category")
+                .setMessage("Are you sure you want to delete \"" + category.getName() + "\"?")
+                .setPositiveButton("Delete", (dialog, which) -> deleteCategory(category.getId()))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteCategory(int categoryId) {
+        String token = authService.getAccessToken();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                ApiClient.delete("/categories/" + categoryId, token);
+                handler.post(() -> {
+                    Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
+                    loadCategories();
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to delete category", Toast.LENGTH_SHORT).show());
             }
         });
     }

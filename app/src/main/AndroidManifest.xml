@@ -76,6 +76,12 @@
             android:exported="false"
             android:label="Users">
         </activity>
+        <activity
+            android:name=".ui.profile.ProfileActivity"
+            android:exported="false"
+            android:label="My Profile"
+            android:theme="@style/Theme.ELearn.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

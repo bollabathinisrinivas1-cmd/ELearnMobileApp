@@ -76,6 +76,14 @@ public class Enrollment {
         this.courseName = courseName;
     }
 
+    public void setProgressPercent(int progressPercent) {
+        this.progressPercent = progressPercent;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
     public String getEnrolledAt() {
         return enrolledAt;
     }
