@@ -18,12 +18,15 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <ImageView
+        <TextView
             android:id="@+id/categoryIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:contentDescription="Category icon"
-            tools:background="@android:color/holo_blue_light" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:text="P" />
 
         <TextView
             android:id="@+id/categoryName"

@@ -60,7 +60,20 @@ public class EnrollmentsActivity extends AppCompatActivity {
                 List<Enrollment> enrollments = new ArrayList<>();
                 for (int i = 0; i < response.length(); i++) {
                     JSONObject obj = response.getJSONObject(i);
-                    enrollments.add(Enrollment.fromJson(obj));
+                    Enrollment enrollment = Enrollment.fromJson(obj);
+
+                    // Fetch course details to get the course name
+                    try {
+                        String courseId = obj.optString("courseId", "");
+                        if (!courseId.isEmpty()) {
+                            JSONObject course = ApiClient.getObject("/courses/" + courseId, token);
+                            enrollment.setCourseName(course.optString("title", "Course"));
+                        }
+                    } catch (Exception ignored) {
+                        // Keep default course name if fetch fails
+                    }
+
+                    enrollments.add(enrollment);
                 }
 
                 mainHandler.post(() -> {

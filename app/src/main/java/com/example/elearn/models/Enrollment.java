@@ -72,6 +72,10 @@ public class Enrollment {
         return courseName;
     }
 
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
     public String getEnrolledAt() {
         return enrolledAt;
     }
