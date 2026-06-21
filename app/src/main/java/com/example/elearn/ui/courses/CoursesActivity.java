@@ -22,6 +22,7 @@ import com.example.elearn.databinding.ActivityCoursesBinding;
 import com.example.elearn.models.Course;
 import com.example.elearn.network.ApiClient;
 import com.example.elearn.network.ApiException;
+import com.example.elearn.ui.dashboard.DashboardActivity;
 import com.example.elearn.ui.login.LoginActivity;
 
 import org.json.JSONArray;
@@ -64,6 +65,12 @@ public class CoursesActivity extends AppCompatActivity {
 
         categoryId = getIntent().getIntExtra("categoryId", -1);
         loadCourses();
+
+        // Check if we should show a specific course's details (from EnrollmentsActivity)
+        String viewCourseId = getIntent().getStringExtra("viewCourseId");
+        if (viewCourseId != null && !viewCourseId.isEmpty()) {
+            showCourseById(viewCourseId);
+        }
     }
 
     private void loadCourses() {
@@ -141,7 +148,40 @@ public class CoursesActivity extends AppCompatActivity {
                 .setTitle(course.getTitle())
                 .setMessage(message)
                 .setPositiveButton("Close", null)
+                .setNeutralButton("Enroll", (d, w) -> enrollInCourse(course.getId()))
                 .show();
+    }
+
+    private void enrollInCourse(String courseId) {
+        String token = authService.getAccessToken();
+        String userId = authService.getUserId();
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("userId", userId);
+                body.put("courseId", courseId);
+                ApiClient.postWithAuth("/enrollments", body, token);
+                handler.post(() -> {
+                    Toast.makeText(this, "Enrolled successfully!", Toast.LENGTH_SHORT).show();
+                    DashboardActivity.needsRefresh = true;
+                });
+            } catch (Exception e) {
+                handler.post(() -> Toast.makeText(this, "Failed to enroll. You may already be enrolled.", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void showCourseById(String courseId) {
+        String token = authService.getAccessToken();
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                JSONObject courseJson = ApiClient.getObject("/courses/" + courseId, token);
+                Course course = Course.fromJson(courseJson);
+                handler.post(() -> showCourseDetailsDialog(course));
+            } catch (Exception ignored) {}
+        });
     }
 
     private void showCreateCourseDialog() {
@@ -226,6 +266,7 @@ public class CoursesActivity extends AppCompatActivity {
                 ApiClient.postWithAuth("/courses", body, token);
                 handler.post(() -> {
                     Toast.makeText(this, "Course created", Toast.LENGTH_SHORT).show();
+                    DashboardActivity.needsRefresh = true;
                     loadCourses();
                 });
             } catch (Exception e) {
@@ -371,6 +412,7 @@ public class CoursesActivity extends AppCompatActivity {
                 ApiClient.delete("/courses/" + courseId, token);
                 handler.post(() -> {
                     Toast.makeText(this, "Course deleted", Toast.LENGTH_SHORT).show();
+                    DashboardActivity.needsRefresh = true;
                     loadCourses();
                 });
             } catch (Exception e) {

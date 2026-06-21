@@ -17,6 +17,8 @@ import com.example.elearn.databinding.ActivityEnrollmentsBinding;
 import com.example.elearn.models.Enrollment;
 import com.example.elearn.network.ApiClient;
 import com.example.elearn.network.ApiException;
+import com.example.elearn.ui.courses.CoursesActivity;
+import com.example.elearn.ui.dashboard.DashboardActivity;
 import com.example.elearn.ui.login.LoginActivity;
 
 import org.json.JSONArray;
@@ -108,9 +110,9 @@ public class EnrollmentsActivity extends AppCompatActivity {
                         adapterHolder[0] = new EnrollmentAdapter(enrollments, new EnrollmentAdapter.OnEnrollmentActionListener() {
                             @Override
                             public void onActionClick(Enrollment enrollment) {
-                                Toast.makeText(EnrollmentsActivity.this, 
-                                    enrollment.getProgressPercent() == 100 ? "Review Course - Coming Soon" : "Start/Continue Course - Coming Soon", 
-                                    Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(EnrollmentsActivity.this, CoursesActivity.class);
+                                intent.putExtra("viewCourseId", enrollment.getCourseId());
+                                startActivity(intent);
                             }
 
                             @Override
@@ -177,6 +179,7 @@ public class EnrollmentsActivity extends AppCompatActivity {
                     enrollments.remove(enrollment);
                     adapter.notifyDataSetChanged();
                     Toast.makeText(this, "Enrollment deleted", Toast.LENGTH_SHORT).show();
+                    DashboardActivity.needsRefresh = true;
                     if (enrollments.isEmpty()) {
                         binding.emptyText.setText("No enrollments found");
                         binding.emptyText.setVisibility(View.VISIBLE);

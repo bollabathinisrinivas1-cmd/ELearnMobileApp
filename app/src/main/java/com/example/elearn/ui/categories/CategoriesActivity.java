@@ -19,6 +19,7 @@ import com.example.elearn.models.Category;
 import com.example.elearn.network.ApiClient;
 import com.example.elearn.network.ApiException;
 import com.example.elearn.ui.courses.CoursesActivity;
+import com.example.elearn.ui.dashboard.DashboardActivity;
 import com.example.elearn.ui.login.LoginActivity;
 
 import org.json.JSONArray;
@@ -150,6 +151,7 @@ public class CategoriesActivity extends AppCompatActivity {
                 ApiClient.postWithAuth("/categories", body, token);
                 handler.post(() -> {
                     Toast.makeText(this, "Category created", Toast.LENGTH_SHORT).show();
+                    DashboardActivity.needsRefresh = true;
                     loadCategories();
                 });
             } catch (Exception e) {
@@ -229,6 +231,7 @@ public class CategoriesActivity extends AppCompatActivity {
                 ApiClient.delete("/categories/" + categoryId, token);
                 handler.post(() -> {
                     Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
+                    DashboardActivity.needsRefresh = true;
                     loadCategories();
                 });
             } catch (Exception e) {

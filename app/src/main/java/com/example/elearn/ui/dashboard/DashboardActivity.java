@@ -46,6 +46,8 @@ import java.util.concurrent.Executors;
  */
 public class DashboardActivity extends AppCompatActivity {
 
+    public static boolean needsRefresh = false;
+
     private ActivityDashboardBinding binding;
     private DashboardViewModel viewModel;
     private AuthService authService;
@@ -122,9 +124,10 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Reload dashboard data when returning from other activities (e.g., after deleting enrollment)
-        if (viewModel != null && authService != null) {
+        // Only reload dashboard data when another activity signals a change
+        if (needsRefresh && viewModel != null && authService != null) {
             viewModel.loadDashboardData(authService);
+            needsRefresh = false;
         }
     }
 
@@ -135,11 +138,14 @@ public class DashboardActivity extends AppCompatActivity {
         PopupMenu popup = new PopupMenu(this, anchor);
         popup.inflate(R.menu.user_menu);
 
-        // Set user name as the first item title
+        // Set user name as the first item title with bold styling
         MenuItem userNameItem = popup.getMenu().findItem(R.id.menu_user_name);
         String userName = authService.getUserName();
         if (userName != null && !userName.isEmpty()) {
-            userNameItem.setTitle(userName);
+            android.text.SpannableString boldName = new android.text.SpannableString(userName);
+            boldName.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, boldName.length(), 0);
+            userNameItem.setTitle(boldName);
+            userNameItem.setEnabled(true);
         }
 
         popup.setOnMenuItemClickListener(item -> {

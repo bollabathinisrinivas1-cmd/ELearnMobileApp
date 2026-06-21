@@ -1,193 +1,209 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@drawable/gradient_header"
-        app:navigationIcon="?attr/homeAsUpIndicator"
-        app:title="My Profile"
-        app:titleTextColor="@android:color/white" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="48dp"
-        android:visibility="gone" />
-
-    <ScrollView
-        android:id="@+id/profileContent"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@drawable/gradient_header"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:title="My Profile"
+            app:titleTextColor="@android:color/white" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
+            android:layout_gravity="center"
+            android:layout_marginTop="48dp"
+            android:visibility="gone" />
 
-            <!-- Profile Image -->
-            <ImageView
-                android:id="@+id/profileImage"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/avatar_1"
-                android:scaleType="centerCrop"
-                android:contentDescription="Profile picture" />
+        <ScrollView
+            android:id="@+id/profileContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
 
-            <!-- User Name -->
-            <TextView
-                android:id="@+id/profileName"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:textColor="#333333"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:padding="24dp">
 
-            <!-- Role -->
-            <TextView
-                android:id="@+id/profileRole"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:textColor="#666666"
-                android:textSize="14sp" />
+                <!-- Profile Image -->
+                <ImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/avatar_1"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Profile picture" />
 
-            <!-- Gender -->
-            <TextView
-                android:id="@+id/labelGender"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Gender"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- User Name -->
+                <TextView
+                    android:id="@+id/profileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:textColor="#333333"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/profileGender"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <!-- Role -->
+                <TextView
+                    android:id="@+id/profileRole"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textColor="#666666"
+                    android:textSize="14sp" />
 
-            <!-- Bio -->
-            <TextView
-                android:id="@+id/labelBio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Bio"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- Gender -->
+                <TextView
+                    android:id="@+id/labelGender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Gender"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/profileBio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/profileGender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-            <!-- Country -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Country"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- Bio -->
+                <TextView
+                    android:id="@+id/labelBio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Bio"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/profileCountry"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/profileBio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-            <!-- State -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="State"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- Country -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Country"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/profileState"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/profileCountry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-            <!-- District -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="District"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- State -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="State"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/profileDistrict"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/profileState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-            <!-- Village -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Village"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- District -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="District"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/profileVillage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/profileDistrict"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-            <!-- Education/Qualification -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Education / Qualification"
-                android:textColor="#999999"
-                android:textSize="12sp" />
+                <!-- Village -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Village"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/profileEducation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/profileVillage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-        </LinearLayout>
+                <!-- Education/Qualification -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Education / Qualification"
+                    android:textColor="#999999"
+                    android:textSize="12sp" />
 
-    </ScrollView>
+                <TextView
+                    android:id="@+id/profileEducation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#333333"
+                    android:textSize="16sp" />
 
-</LinearLayout>
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabEditProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="Edit Profile"
+        android:src="@android:drawable/ic_menu_edit"
+        app:tint="@android:color/white" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
