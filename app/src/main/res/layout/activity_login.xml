@@ -14,7 +14,7 @@
         <!-- Purple Gradient Header with curved bottom -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="260dp">
+            android:layout_height="250dp">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -24,12 +24,12 @@
 
         </FrameLayout>
 
-        <!-- Circular white icon (uses translationY to overlap header) -->
+        <!-- Circular white icon at curve boundary -->
         <FrameLayout
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
             android:layout_gravity="center_horizontal"
-            android:translationY="-36dp"
+            android:translationY="-58dp"
             android:background="@drawable/circle_avatar_bg"
             android:elevation="6dp">
 
@@ -38,7 +38,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="📖"
-                android:textSize="28sp" />
+                android:textSize="30sp" />
 
         </FrameLayout>
 
@@ -46,7 +46,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-24dp"
+            android:layout_marginTop="-44dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
@@ -163,8 +163,9 @@
                     android:text="Log In"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textSize="17sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.02" />
 
                 <ProgressBar
                     android:id="@+id/loginProgress"
