@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:fillViewport="true">
 
     <LinearLayout
@@ -10,21 +11,54 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Gradient Header with Sign Up branding -->
+        <!-- Purple Gradient Header with Logo -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@drawable/gradient_header">
+
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="-40dp"
+                android:background="@drawable/circle_avatar_bg"
+                android:elevation="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="📖"
+                    android:textSize="32sp" />
+
+            </FrameLayout>
+
+        </FrameLayout>
+
+        <!-- Title -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@drawable/gradient_header"
-            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sign Up"
-                android:textColor="@android:color/white"
-                android:textSize="36sp"
+                android:text="Create Account"
+                android:textColor="#333333"
+                android:textSize="28sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Join eLibrary today"
+                android:textColor="#999999"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
@@ -33,7 +67,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingStart="24dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp">
 
             <!-- Success Message -->
             <TextView
@@ -63,18 +100,19 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Enter your full name">
+                android:hint="Full Name"
+                app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
+                app:startIconTint="#7E57C2">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/nameEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="Enter your full name"
                     android:inputType="textPersonName" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Name Error -->
             <TextView
                 android:id="@+id/nameError"
                 android:layout_width="wrap_content"
@@ -91,18 +129,20 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Enter your email">
+                android:layout_marginTop="12dp"
+                android:hint="Email address"
+                app:startIconDrawable="@android:drawable/ic_dialog_email"
+                app:startIconTint="#7E57C2">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/emailEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="Enter your email"
                     android:inputType="textEmailAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Email Error -->
             <TextView
                 android:id="@+id/emailError"
                 android:layout_width="wrap_content"
@@ -113,19 +153,22 @@
                 android:textSize="12sp"
                 android:visibility="gone" />
 
-            <!-- Phone Input (Optional) -->
+            <!-- Phone Input -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/phoneInputLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Enter your phone number (optional)">
+                android:layout_marginTop="12dp"
+                android:hint="Phone (optional)"
+                app:startIconDrawable="@android:drawable/ic_menu_call"
+                app:startIconTint="#7E57C2">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/phoneEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="Enter your phone number"
                     android:inputType="phone" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -136,19 +179,21 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Enter your password"
-                app:passwordToggleEnabled="true">
+                android:layout_marginTop="12dp"
+                android:hint="Password"
+                app:endIconMode="password_toggle"
+                app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+                app:startIconTint="#7E57C2">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/passwordEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="Enter your password"
                     android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Password Error -->
             <TextView
                 android:id="@+id/passwordError"
                 android:layout_width="wrap_content"
@@ -159,21 +204,22 @@
                 android:textSize="12sp"
                 android:visibility="gone" />
 
-            <!-- Sign Up Button with Progress -->
+            <!-- Sign Up Button -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="28dp">
 
                 <Button
                     android:id="@+id/signupButton"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
+                    android:layout_height="52dp"
                     android:background="@drawable/gradient_button"
                     android:text="Sign Up"
+                    android:textAllCaps="false"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp"
-                    android:textAllCaps="false" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <ProgressBar
                     android:id="@+id/signupProgress"
@@ -191,9 +237,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="20dp"
                 android:text="Already have an account? Log In"
-                android:textColor="#5c6bc0"
+                android:textColor="#7E57C2"
                 android:textSize="14sp" />
 
         </LinearLayout>
