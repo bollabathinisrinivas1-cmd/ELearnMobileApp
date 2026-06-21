@@ -51,6 +51,9 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             Toast.makeText(this, "Password reset link sent", Toast.LENGTH_SHORT).show();
             finish();
         });
+
+        // Back to Login link
+        binding.backToLoginLink.setOnClickListener(v -> finish());
     }
 
     @Override

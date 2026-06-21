@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Purple gradient background -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#5c6bc0"
+                android:endColor="#7e57c2"
+                android:angle="135" />
+        </shape>
+    </item>
+    <!-- White curved bottom overlay -->
+    <item android:top="180dp">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+            <size android:width="600dp" android:height="120dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -11,19 +11,21 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Purple Gradient Header with Logo -->
+        <!-- Purple Gradient Header with curved bottom -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:background="@drawable/gradient_header">
+            android:layout_height="240dp"
+            android:background="@drawable/login_header_bg"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="-40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="160dp"
                 android:background="@drawable/circle_avatar_bg"
-                android:elevation="4dp">
+                android:elevation="6dp">
 
                 <TextView
                     android:layout_width="match_parent"
@@ -40,7 +42,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="16dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
@@ -108,7 +110,6 @@
                     android:id="@+id/nameEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Enter your full name"
                     android:inputType="textPersonName" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -138,7 +139,6 @@
                     android:id="@+id/emailEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Enter your email"
                     android:inputType="textEmailAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -168,7 +168,6 @@
                     android:id="@+id/phoneEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Enter your phone number"
                     android:inputType="phone" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -189,7 +188,6 @@
                     android:id="@+id/passwordEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Enter your password"
                     android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
