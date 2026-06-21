@@ -138,20 +138,121 @@ public class DashboardActivity extends AppCompatActivity {
         binding.actionAddCourse.setOnClickListener(v ->
                 startActivity(new Intent(this, CoursesActivity.class)));
 
-        binding.actionAddUser.setOnClickListener(v -> {
-            try {
-                startActivity(new Intent(this,
-                        Class.forName("com.example.elearn.ui.signup.SignupActivity")));
-            } catch (ClassNotFoundException e) {
-                Toast.makeText(this, "Admin panel", Toast.LENGTH_SHORT).show();
-            }
-        });
+        binding.actionAddUser.setOnClickListener(v -> showCreateUserDialog());
 
         binding.actionAddCategory.setOnClickListener(v ->
                 startActivity(new Intent(this, CategoriesActivity.class)));
 
         binding.actionReports.setOnClickListener(v ->
                 Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Shows a "Create User" dialog with Name, Email, Phone, and Role fields.
+     */
+    private void showCreateUserDialog() {
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(48, 32, 48, 16);
+
+        android.widget.EditText nameInput = new android.widget.EditText(this);
+        nameInput.setHint("Name");
+        nameInput.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        layout.addView(nameInput);
+
+        android.widget.EditText emailInput = new android.widget.EditText(this);
+        emailInput.setHint("Email");
+        emailInput.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        android.widget.LinearLayout.LayoutParams emailParams = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        emailParams.topMargin = 16;
+        emailInput.setLayoutParams(emailParams);
+        layout.addView(emailInput);
+
+        android.widget.EditText phoneInput = new android.widget.EditText(this);
+        phoneInput.setHint("Phone");
+        phoneInput.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+        android.widget.LinearLayout.LayoutParams phoneParams = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        phoneParams.topMargin = 16;
+        phoneInput.setLayoutParams(phoneParams);
+        layout.addView(phoneInput);
+
+        android.widget.Spinner roleSpinner = new android.widget.Spinner(this);
+        android.widget.ArrayAdapter<String> roleAdapter = new android.widget.ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"Student", "Teacher", "Admin"});
+        roleSpinner.setAdapter(roleAdapter);
+        android.widget.LinearLayout.LayoutParams spinnerParams = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        spinnerParams.topMargin = 16;
+        roleSpinner.setLayoutParams(spinnerParams);
+        layout.addView(roleSpinner);
+
+        // Info text
+        android.widget.TextView infoText = new android.widget.TextView(this);
+        infoText.setText("An email invitation will be sent to the user to set their password.");
+        infoText.setTextColor(0xFF1976D2);
+        infoText.setTextSize(12);
+        infoText.setPadding(0, 24, 0, 0);
+        infoText.setBackgroundColor(0xFFE3F2FD);
+        infoText.setPadding(16, 12, 16, 12);
+        android.widget.LinearLayout.LayoutParams infoParams = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        infoParams.topMargin = 24;
+        infoText.setLayoutParams(infoParams);
+        layout.addView(infoText);
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Create User")
+                .setView(layout)
+                .setPositiveButton("Create", (dialog, which) -> {
+                    String name = nameInput.getText().toString().trim();
+                    String email = emailInput.getText().toString().trim();
+                    String phone = phoneInput.getText().toString().trim();
+                    String role = roleSpinner.getSelectedItem().toString();
+
+                    if (name.isEmpty()) {
+                        Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (email.isEmpty()) {
+                        Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    createUser(name, email, phone, role);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Creates a new user via the admin API endpoint.
+     */
+    private void createUser(String name, String email, String phone, String role) {
+        String token = authService.getAccessToken();
+        executor.execute(() -> {
+            try {
+                org.json.JSONObject body = new org.json.JSONObject();
+                body.put("name", name);
+                body.put("email", email);
+                body.put("phone", phone);
+                body.put("role", role);
+                ApiClient.postWithAuth("/users/admin/user", body, token);
+                mainHandler.post(() -> {
+                    Toast.makeText(this, "User created successfully", Toast.LENGTH_SHORT).show();
+                    needsRefresh = true;
+                    loadDashboardData();
+                });
+            } catch (Exception e) {
+                mainHandler.post(() -> Toast.makeText(this, "Failed to create user. Email may already exist.", Toast.LENGTH_SHORT).show());
+            }
+        });
     }
 
     /**
