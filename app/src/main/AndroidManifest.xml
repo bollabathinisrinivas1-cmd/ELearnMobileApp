@@ -59,22 +59,26 @@
         <activity
             android:name=".ui.courses.CoursesActivity"
             android:exported="false"
-            android:label="Courses">
+            android:label="Courses"
+            android:theme="@style/Theme.ELearn.NoActionBar">
         </activity>
         <activity
             android:name=".ui.categories.CategoriesActivity"
             android:exported="false"
-            android:label="Categories">
+            android:label="Categories"
+            android:theme="@style/Theme.ELearn.NoActionBar">
         </activity>
         <activity
             android:name=".ui.enrollments.EnrollmentsActivity"
             android:exported="false"
-            android:label="My Enrollments">
+            android:label="My Enrollments"
+            android:theme="@style/Theme.ELearn.NoActionBar">
         </activity>
         <activity
             android:name=".ui.users.UsersActivity"
             android:exported="false"
-            android:label="Users">
+            android:label="Users"
+            android:theme="@style/Theme.ELearn.NoActionBar">
         </activity>
         <activity
             android:name=".ui.profile.ProfileActivity"

@@ -76,7 +76,7 @@
                 android:background="@drawable/rounded_search_bg"
                 android:drawableStart="@android:drawable/ic_menu_search"
                 android:drawablePadding="12dp"
-                android:focusable="false"
+                android:focusable="true"
                 android:hint="Search enrollments..."
                 android:importantForAutofill="no"
                 android:paddingStart="16dp"
