@@ -6,7 +6,7 @@ import org.json.JSONObject;
  * Model representing a platform user from the eLibrary API.
  */
 public class User {
-    private int id;
+    private String id;
     private String name;
     private String email;
     private String phone;
@@ -22,7 +22,7 @@ public class User {
      */
     public static User fromJson(JSONObject json) {
         User user = new User();
-        user.id = json.optInt("id", 0);
+        user.id = json.optString("id", "");
         user.name = json.optString("name", "");
         user.email = json.optString("email", "");
         user.phone = json.optString("phone", "");
@@ -31,7 +31,7 @@ public class User {
         return user;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 

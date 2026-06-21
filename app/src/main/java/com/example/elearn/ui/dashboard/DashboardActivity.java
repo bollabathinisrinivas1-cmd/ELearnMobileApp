@@ -98,6 +98,9 @@ public class DashboardActivity extends AppCompatActivity {
         // Setup bottom navigation
         setupBottomNav();
 
+        // Apply role-based visibility
+        applyRoleBasedVisibility();
+
         // Load data from API
         loadDashboardData();
     }
@@ -266,14 +269,50 @@ public class DashboardActivity extends AppCompatActivity {
         binding.navCourses.setOnClickListener(v ->
                 startActivity(new Intent(this, CoursesActivity.class)));
 
-        binding.navStudents.setOnClickListener(v ->
-                startActivity(new Intent(this, UsersActivity.class)));
+        binding.navStudents.setOnClickListener(v -> {
+                Intent intent = new Intent(this, UsersActivity.class);
+                intent.putExtra("roleFilter", "Student");
+                startActivity(intent);
+        });
 
         binding.navReports.setOnClickListener(v ->
                 Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show());
 
         binding.navSettings.setOnClickListener(v ->
                 Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Hides admin-only UI elements for non-Admin roles.
+     * Admin: sees everything
+     * Teacher: sees Total Courses, Categories, My Enrollments + Add Course quick action
+     * Student: sees Total Courses, Categories, My Enrollments only (no quick actions)
+     */
+    private void applyRoleBasedVisibility() {
+        boolean isAdmin = authService.isAdmin();
+        String role = authService.getUserRole();
+        boolean isTeacher = "Teacher".equals(role);
+
+        if (!isAdmin) {
+            // Hide Students and Teachers & Admin overview cards
+            binding.cardStaff.setVisibility(View.GONE);
+
+            // Hide Students tab in bottom nav
+            binding.navStudents.setVisibility(View.GONE);
+
+            // Hide Enrollment Trend chart (Admin-only)
+            binding.chartContainer.setVisibility(View.GONE);
+
+            if (isTeacher) {
+                // Teacher: show Add Course only, hide Add User, Add Category, Reports
+                binding.actionAddUser.setVisibility(View.GONE);
+                binding.actionAddCategory.setVisibility(View.GONE);
+                binding.actionReports.setVisibility(View.GONE);
+            } else {
+                // Student: hide all quick actions
+                binding.quickActionsRow.setVisibility(View.GONE);
+            }
+        }
     }
 
     /**
@@ -296,18 +335,23 @@ public class DashboardActivity extends AppCompatActivity {
                 JSONArray categoriesArray = ApiClient.getArray("/categories", token);
                 int categoryCount = categoriesArray.length();
 
-                // Fetch users
-                JSONArray usersArray = ApiClient.getArray("/users", token);
+                // Fetch users (Admin only - will 403 for other roles)
+                JSONArray usersArray = new JSONArray();
                 int studentCount = 0;
                 int staffCount = 0;
-                for (int i = 0; i < usersArray.length(); i++) {
-                    JSONObject user = usersArray.getJSONObject(i);
-                    String role = user.optString("role", "");
-                    if ("Student".equals(role)) {
-                        studentCount++;
-                    } else {
-                        staffCount++;
-                    }
+                if (authService.isAdmin()) {
+                    try {
+                        usersArray = ApiClient.getArray("/users", token);
+                        for (int i = 0; i < usersArray.length(); i++) {
+                            JSONObject user = usersArray.getJSONObject(i);
+                            String role = user.optString("role", "");
+                            if ("Student".equals(role)) {
+                                studentCount++;
+                            } else {
+                                staffCount++;
+                            }
+                        }
+                    } catch (Exception ignored) {}
                 }
 
                 // Fetch enrollments for current user
@@ -328,7 +372,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                     // Populate overview cards
                     populateOverviewCards(finalCourseCount, finalStudentCount,
-                            finalStaffCount, finalCategoryCount);
+                            finalStaffCount, finalCategoryCount, finalEnrollmentCount);
 
                     // Populate enrollment count
                     binding.enrollmentCount.setText(String.valueOf(finalEnrollmentCount));
@@ -368,11 +412,22 @@ public class DashboardActivity extends AppCompatActivity {
     /**
      * Populates the overview stat cards with API data.
      */
-    private void populateOverviewCards(int courses, int students, int staff, int categories) {
+    private void populateOverviewCards(int courses, int students, int staff, int categories, int enrollments) {
         binding.countCourses.setText(String.valueOf(courses));
-        binding.countStudents.setText(String.valueOf(students));
-        binding.countStaff.setText(String.valueOf(staff));
         binding.countCategories.setText(String.valueOf(categories));
+
+        if (authService.isAdmin()) {
+            binding.countStudents.setText(String.valueOf(students));
+            binding.countStaff.setText(String.valueOf(staff));
+        } else {
+            // For Student/Teacher: repurpose Students card as "My Enrollments"
+            binding.countStudents.setText(String.valueOf(enrollments));
+            // Update the label text (find the "Students" TextView in cardStudents)
+            // The card layout has: title "Students" → change to "My Enrollments"
+            // Since we can't easily change nested TextViews by ID, use the cardStudents click to go to enrollments
+            binding.cardStudents.setOnClickListener(v ->
+                    startActivity(new Intent(this, EnrollmentsActivity.class)));
+        }
     }
 
     /**
