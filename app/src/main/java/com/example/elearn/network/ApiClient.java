@@ -19,7 +19,7 @@ import java.util.Map;
  * Provides methods for unauthenticated POST requests and authenticated GET requests.
  */
 public class ApiClient {
-    private static final String BASE_URL = "http://3.238.242.124/api";
+    private static final String BASE_URL = "http://44.202.210.90/api";
 
     /**
      * Performs an unauthenticated POST request with a JSON body.

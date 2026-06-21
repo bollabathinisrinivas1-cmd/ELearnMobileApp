@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="360dp"
-    android:height="240dp"
+    android:height="260dp"
     android:viewportWidth="360"
-    android:viewportHeight="240">
+    android:viewportHeight="260">
 
-    <!-- Purple gradient background with curved bottom -->
+    <!-- Main purple background with deep concave curve -->
     <path
-        android:pathData="M0,0 L360,0 L360,190 Q180,240 0,190 Z"
-        android:fillColor="#5c6bc0" />
+        android:pathData="M0,0 L360,0 L360,180 Q180,260 0,180 Z"
+        android:fillColor="#6366F1" />
 
-    <!-- Lighter purple overlay for gradient effect -->
+    <!-- Lighter purple/violet overlay for gradient effect -->
     <path
-        android:pathData="M180,0 L360,0 L360,190 Q270,215 180,200 Z"
-        android:fillColor="#7e57c2"
-        android:fillAlpha="0.5" />
+        android:pathData="M160,0 L360,0 L360,160 Q280,200 160,180 Z"
+        android:fillColor="#8B5CF6"
+        android:fillAlpha="0.6" />
+
+    <!-- Subtle light circle accent in top-right area -->
+    <path
+        android:pathData="M280,40 A40,40 0 1,1 280,41"
+        android:fillColor="#A78BFA"
+        android:fillAlpha="0.3" />
 
 </vector>

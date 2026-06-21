@@ -14,7 +14,7 @@
         <!-- Purple Gradient Header with curved bottom -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp">
+            android:layout_height="260dp">
 
             <ImageView
                 android:layout_width="match_parent"
