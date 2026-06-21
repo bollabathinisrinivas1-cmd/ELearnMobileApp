@@ -15,15 +15,20 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="240dp"
-            android:background="@drawable/login_header_bg"
             android:clipChildren="false"
             android:clipToPadding="false">
 
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/login_header_bg" />
+
             <FrameLayout
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="160dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="-36dp"
                 android:background="@drawable/circle_avatar_bg"
                 android:elevation="6dp">
 
@@ -32,7 +37,7 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:text="📖"
-                    android:textSize="32sp" />
+                    android:textSize="28sp" />
 
             </FrameLayout>
 
@@ -42,7 +47,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="44dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
