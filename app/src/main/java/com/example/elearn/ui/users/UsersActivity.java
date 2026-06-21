@@ -147,24 +147,31 @@ public class UsersActivity extends AppCompatActivity {
     }
 
     private void setupAdminLongPress(List<User> users, UserAdapter adapter) {
-        // Set item click listener on RecyclerView items via adapter itemView
-        for (int i = 0; i < binding.recyclerView.getChildCount(); i++) {
-            // Can't easily do this here, use RecyclerView addOnItemTouchListener or update adapter
-        }
-        // Simpler: use RecyclerView's addOnChildAttachStateChangeListener
-        binding.recyclerView.addOnChildAttachStateChangeListener(new androidx.recyclerview.widget.RecyclerView.OnChildAttachStateChangeListener() {
-            @Override
-            public void onChildViewAttachedToWindow(View view) {
-                view.setOnLongClickListener(v -> {
-                    int pos = binding.recyclerView.getChildAdapterPosition(v);
-                    if (pos >= 0 && pos < users.size()) {
-                        showUserOptionsDialog(users.get(pos), users, adapter);
+        binding.recyclerView.addOnItemTouchListener(new androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener() {});
+        // Use a GestureDetector for reliable long-press detection
+        android.view.GestureDetector gestureDetector = new android.view.GestureDetector(this,
+                new android.view.GestureDetector.SimpleOnGestureListener() {
+                    @Override
+                    public void onLongPress(android.view.MotionEvent e) {
+                        View child = binding.recyclerView.findChildViewUnder(e.getX(), e.getY());
+                        if (child != null) {
+                            int pos = binding.recyclerView.getChildAdapterPosition(child);
+                            if (pos >= 0 && pos < users.size()) {
+                                showUserOptionsDialog(users.get(pos), users, adapter);
+                            }
+                        }
                     }
-                    return true;
                 });
+        binding.recyclerView.addOnItemTouchListener(new androidx.recyclerview.widget.RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(androidx.recyclerview.widget.RecyclerView rv, android.view.MotionEvent e) {
+                gestureDetector.onTouchEvent(e);
+                return false;
             }
             @Override
-            public void onChildViewDetachedFromWindow(View view) {}
+            public void onTouchEvent(androidx.recyclerview.widget.RecyclerView rv, android.view.MotionEvent e) {}
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
         });
     }
 

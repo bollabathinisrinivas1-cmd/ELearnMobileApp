@@ -275,8 +275,11 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(intent);
         });
 
-        binding.navReports.setOnClickListener(v ->
-                Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show());
+        binding.navReports.setOnClickListener(v -> {
+                Intent intent = new Intent(this, UsersActivity.class);
+                intent.putExtra("roleFilter", "Staff");
+                startActivity(intent);
+        });
 
         binding.navSettings.setOnClickListener(v ->
                 Toast.makeText(this, "Coming Soon", Toast.LENGTH_SHORT).show());
@@ -295,10 +298,12 @@ public class DashboardActivity extends AppCompatActivity {
 
         if (!isAdmin) {
             // Hide Students and Teachers & Admin overview cards
+            binding.cardStudents.setVisibility(View.GONE);
             binding.cardStaff.setVisibility(View.GONE);
 
-            // Hide Students tab in bottom nav
+            // Hide Students and Teachers bottom nav tabs
             binding.navStudents.setVisibility(View.GONE);
+            binding.navReports.setVisibility(View.GONE);
 
             // Hide Enrollment Trend chart (Admin-only)
             binding.chartContainer.setVisibility(View.GONE);
@@ -383,8 +388,14 @@ public class DashboardActivity extends AppCompatActivity {
                     // Populate recent courses
                     populateRecentCourses(finalCoursesArray);
 
-                    // Populate recent users
-                    populateRecentUsers(finalUsersArray);
+                    // Populate recent users (Admin only)
+                    if (authService.isAdmin()) {
+                        populateRecentUsers(finalUsersArray);
+                    } else {
+                        // Hide the recent users card for non-admin
+                        binding.viewAllUsers.setVisibility(View.GONE);
+                        binding.recentUsersContainer.setVisibility(View.GONE);
+                    }
 
                     // View All click handlers
                     binding.viewAllCourses.setOnClickListener(v ->
@@ -419,15 +430,8 @@ public class DashboardActivity extends AppCompatActivity {
         if (authService.isAdmin()) {
             binding.countStudents.setText(String.valueOf(students));
             binding.countStaff.setText(String.valueOf(staff));
-        } else {
-            // For Student/Teacher: repurpose Students card as "My Enrollments"
-            binding.countStudents.setText(String.valueOf(enrollments));
-            // Update the label text (find the "Students" TextView in cardStudents)
-            // The card layout has: title "Students" → change to "My Enrollments"
-            // Since we can't easily change nested TextViews by ID, use the cardStudents click to go to enrollments
-            binding.cardStudents.setOnClickListener(v ->
-                    startActivity(new Intent(this, EnrollmentsActivity.class)));
         }
+        // For non-admin: cardStudents and cardStaff are hidden via applyRoleBasedVisibility
     }
 
     /**
